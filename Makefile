@@ -6,36 +6,36 @@
 #    By: kbatz <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/12/02 04:16:06 by kbatz             #+#    #+#              #
-#    Updated: 2018/12/26 18:12:55 by kbatz            ###   ########.fr        #
+#    Updated: 2019/01/06 10:37:26 by kbatz            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 PRJNAME	= fdf
-LIB		= libft libmlx
+LIB		= libft #libmlx
 
 # **************************************************************************** #
 
 NAME	= $(PRJNAME)
-SRCDIR	= srcs/
-OBJDIR	= .objs/
-HDRDIR	= includes/
+SRCDIR	= src/
+OBJDIR	= .obj/
+HDRDIR	= include/
 TESTDIR	= test/
-LIBDIR	= $(LIB)/
+LIBDIR	= $(addsuffix /,$(LIB))
 LHD		= $(LIBDIR)
 SRC		= $(patsubst $(SRCDIR)%,%,$(wildcard $(SRCDIR)*.c))
 OBJ		= $(SRC:%.c=%.o)
 HDR		= $(wildcard $(HDRDIR)*.h)
 TEST	= $(patsubst $(TESTDIR),%,$(wildcard $(TESTDIR)*))
-LFLAG	= -I$(LHD) -L$(LIBDIR) -$(patsubst lib%,l%,$(LIB))
-IFLAG	= -I$(HDRDIR) -I$(LHD)
+LFLAG   = $(addprefix -L,$(LIBDIR)) $(addprefix -,$(patsubst lib%,l%,$(LIB))) -lmlx -framework OpenGL -framework AppKit
+IFLAG   = $(addprefix -I,$(HDRDIR)) $(addprefix -I,$(LHD))
 CFLAG	= -Wall -Wextra -Werror
 
 vpath %.c $(SRCDIR)
 vpath %.o $(OBJDIR)
 
-all: $(NAME)
+all: $(addsuffix .all,$(LIB)) $(NAME)
 
-$(NAME): $(LIB)all $(OBJDIR) $(OBJ)
+$(NAME): $(OBJDIR) $(OBJ)
 	gcc $(addprefix $(OBJDIR), $(OBJ)) -o $(NAME) $(IFLAG) $(LFLAG)
 
 $(OBJ): %.o: %.c $(HDR)
@@ -44,7 +44,7 @@ $(OBJ): %.o: %.c $(HDR)
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
-clean: $(LIB)fclean
+clean:
 	rm -Rf $(OBJDIR)
 
 fclean: clean
@@ -52,12 +52,12 @@ fclean: clean
 
 re: fclean all
 
-$(LIB)%:
-	make -C $(LIBDIR) $(patsubst $(LIB)%, %, $@)
+lib%:
+	make -C $(subst .,/ ,$@)
 
 norm:
-	norminette $(addprefix $(SRCDIR), $(SRC))
-	norminette $(addprefix $(HDRDIR), $(HDR))
+	norminette $(SRCDIR)
+	norminette $(HDRDIR)
 
 t: all $(TEST)
 
