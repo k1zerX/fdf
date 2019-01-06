@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/01/06 18:07:33 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/01/06 20:07:49 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void		ft_put_pixel(void *mlx, void *win, int x, int y, unsigned int color, doubl
 {
 	int		prev;
 
-	prev = 0;
+	prev = 0x00ffffff;
 	//prev = get_color(x, y);
 	if (is)
 		mlx_pixel_put(mlx, win, y, x, ft_color(prev, color, opacity));
@@ -121,6 +121,23 @@ int			ft_close(void *param)
 	return (0);
 }
 
+int			ft_key_release(int keycode, void *param)
+{
+	if (keycode == 69)
+		*(double *)param *= 1.1;
+		//param->k *= 1.1;
+	if (keycode == 78)
+		*(double *)param /= 1.1;
+		//param->k /= 1.1;
+	return (0);
+}
+
+int			ft_re(void *mlx, void *param)
+{
+	mlx_clear_window(mlx, param);
+	return (0);
+}
+
 int			main(int ac, char **av)
 {
 	void			*mlx;
@@ -136,10 +153,12 @@ int			main(int ac, char **av)
 	int				endian;
 	unsigned int	color;
 	char			*buf;
+	double			k;
 
 	(void)ac;
 	(void)av;
 	param = NULL;
+	k = 1;
 	x0 = 30;
 	y0 = 30;
 	x1 = 200;
@@ -155,13 +174,15 @@ int			main(int ac, char **av)
 	//mlx_string_put(mlx, win, x, y, color, ft_itoa(size));
 	//y += 50;
 	//mlx_string_put(mlx, win, x, y, color, ft_itoa(endian));
-	//mlx_pixel_put(mlx, win, 50, 50, 0x00ffffff);
-	ft_put_rectangle(mlx, win, x0, y0, x1, y1, 0x00ffffff);
-	ft_put_line(mlx, win, 60, 75, 83, 80, 0x00000000);
-	ft_put_line(mlx, win, 250, 100, 273, 105, 0x00ffffff);
-	ft_put_line(mlx, win, 160, 70, 160, 20, 0x000000ff);
-	ft_put_rectangle(mlx, win, 30, 200, 150, 180, 0x000000);
+	//mlx_pixel_put(mlx, win, 50, 50, 0x00ffffff);{
+	ft_put_rectangle(mlx, win, x0 * k, y0 * k, x1 * k, y1 * k, 0x00ffffff);
+	ft_put_line(mlx, win, 60 * k, 75 * k, 155 * k, 98 * k, 0x00000000);
+	ft_put_line(mlx, win, 250 * k, 100 * k, 273 * k, 105 * k, 0x00ffffff);
+	ft_put_line(mlx, win, 160 * k, 70 * k, 160 * k, 20 * k, 0x000000ff);
+	ft_put_rectangle(mlx, win, 30 * k, 200 * k, 150 * k, 180 * k, 0x000000);
 	mlx_hook(win, 17, 0, &ft_close, param);
+	mlx_hook(win, 3, 0, &ft_key_release, &k);
+//	mlx_hook(win, 12, 0, &ft_re, win);
 	mlx_loop(mlx);
 	return (0);
 }
