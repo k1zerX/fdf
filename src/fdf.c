@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/01/06 20:07:49 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/01/08 21:44:46 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,6 +138,11 @@ int			ft_re(void *mlx, void *param)
 	return (0);
 }
 
+int			ft_draw(void *mlx, void *win)
+{
+	double		d
+}
+
 int			main(int ac, char **av)
 {
 	void			*mlx;
@@ -182,6 +187,7 @@ int			main(int ac, char **av)
 	ft_put_rectangle(mlx, win, 30 * k, 200 * k, 150 * k, 180 * k, 0x000000);
 	mlx_hook(win, 17, 0, &ft_close, param);
 	mlx_hook(win, 3, 0, &ft_key_release, &k);
+	mlx_clear_window(mlx, win);
 //	mlx_hook(win, 12, 0, &ft_re, win);
 	mlx_loop(mlx);
 	return (0);
