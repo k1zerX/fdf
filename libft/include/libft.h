@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/20 17:48:49 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 10:50:25 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/01 12:58:29 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,5 +157,6 @@ void					*ft_max(void *a, void *b, size_t size);
 char					*ft_itoa_base(int n, int base);
 void					ft_swap(void *a, void *b, size_t size);
 int						ft_count_matches(const char *str, const char *match);
+int						ft_isspace(int c);
 
 #endif

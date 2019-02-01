@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 12:23:33 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/01 16:16:10 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 t_qtrn			*g_qx = NULL;
 t_qtrn			*g_qy = NULL;
+t_qtrn			*g_qz = NULL;
 int				g_shift = 0;
 
 void		ft_draw(t_params *prms);
@@ -232,11 +233,21 @@ void		ft_put_vector(t_params *prms, t_vector from, t_vector v, int color)
 
 void	ft_exit(int status, t_params *prms)
 {
+	int		i;
+
 	if (status == USAGE)
 		write(1, "usage:\n\t./fdf [file_name]\n\t./fdf [file_name] [size_x > 0] [size_y > 0]\n", 71);
 	else if (status == CLOSE || status == ERROR)
 	{
+		while (prms->m-- > 0)
+		{
+			i = prms->n;
+			while (i-- > 0)
+				free(prms->map[prms->m][i]);
+			free(prms->map[prms->m]);
+		}
 		free(prms->map);
+		prms->map = NULL;
 		free(g_qx);
 		free(g_qy);
 		mlx_destroy_window(prms->mlx, prms->win);
@@ -258,27 +269,33 @@ void		ft_initialize(t_params *prms)
 
 	if (!(g_qx = malloc(sizeof(*g_qx))))
 		ft_exit(ERROR, prms);
-	axis.x = 0;
-	axis.y = 1; // -1
-	axis.z = 0;
-	*g_qx = get_qtrn(axis, X_ANGLE);
-	if (!(g_qy = malloc(sizeof(*g_qy))))
-		ft_exit(ERROR, prms);
-	axis.x = 1; // -1
+	axis.x = 1;
 	axis.y = 0;
 	axis.z = 0;
-	*g_qy = get_qtrn(axis, Y_ANGLE);
+	*g_qx = get_qtrn(axis, ANGLE);
+	if (!(g_qy = malloc(sizeof(*g_qy))))
+		ft_exit(ERROR, prms);
+	axis.x = 0;
+	axis.y = 1;
+	axis.z = 0;
+	*g_qy = get_qtrn(axis, ANGLE);
+	if (!(g_qz = malloc(sizeof(*g_qz))))
+		ft_exit(ERROR, prms);
+	axis.x = 0;
+	axis.y = 0;
+	axis.z = 1;
+	*g_qz = get_qtrn(axis, ANGLE);
 	if (!prms->x || !prms->y)
 	{
 		prms->x = 1000;
 		prms->y = 1000;
 	}
-	prms->shift.x = 300;
-	prms->shift.y = 300;
+	prms->shift.x = prms->x / 2;
+	prms->shift.y = prms->y / 2;
 	prms->q.w = 1;
 	ft_bzero(&prms->q.v, sizeof(prms->q.v));
-	g_shift = (int)sqrt(prms->n * prms->m) / 40;
-	k_qtrn(&prms->q, 2);
+	g_shift = (int)sqrt(prms->x * prms->y) / 40;
+	k_qtrn(&prms->q, 10);
 }
 
 int			ft_alt_key_press(int keycode, t_params *prms)
@@ -291,8 +308,33 @@ int			ft_alt_key_press(int keycode, t_params *prms)
 		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qy));
 	else if (keycode == 126)
 		prms->q = mul_qtrn(prms->q, *g_qy);
-	//printf("w = %f, x = %f, y = %f, z = %f\n", g_qx->w, g_qx->v.x, g_qx->v.y, g_qx->v.z);
-	//printf("w = %f, x = %f, y = %f, z = %f\n", prms->q.w, prms->q.v.x, prms->q.v.y, prms->q.v.z);
+	return (0);
+}
+
+int			ft_x_press(int keycode, t_params *prms)
+{
+	if (keycode == 69)
+		prms->q = mul_qtrn(prms->q, *g_qx);
+	else if (keycode == 78)
+		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qx));
+	return (0);
+}
+
+int			ft_y_press(int keycode, t_params *prms)
+{
+	if (keycode == 69)
+		prms->q = mul_qtrn(prms->q, *g_qy);
+	else if (keycode == 78)
+		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qy));
+	return (0);
+}
+
+int			ft_z_press(int keycode, t_params *prms)
+{
+	if (keycode == 69)
+		prms->q = mul_qtrn(prms->q, *g_qz);
+	else if (keycode == 78)
+		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qz));
 	return (0);
 }
 
@@ -300,6 +342,12 @@ int			ft_key_press(int keycode, t_params *prms)
 {
 	if (prms->alt)
 		ft_alt_key_press(keycode, prms);
+	else if (prms->xturn)
+		ft_x_press(keycode, prms);
+	else if (prms->yturn)
+		ft_y_press(keycode, prms);
+	else if (prms->zturn)
+		ft_z_press(keycode, prms);
 	else if (keycode == 53)
 		ft_close(prms);
 	else if (keycode == 259)
@@ -312,13 +360,27 @@ int			ft_key_press(int keycode, t_params *prms)
 		prms->shift.y += g_shift;
 	else if (keycode == 126)
 		prms->shift.y -= g_shift;
+	else if (keycode == 7)
+		prms->xturn = 1;
+	else if (keycode == 16)
+		prms->yturn = 1;
+	else if (keycode == 6)
+		prms->zturn = 1;
 	ft_draw(prms);
 	return (0);
 }
 
 int			ft_key_release(int keycode, t_params *prms)
 {
-	if (keycode == 259)
+	if (keycode == 7)
+		prms->xturn = 0;
+	else if (keycode == 16)
+		prms->yturn = 0;
+	else if (keycode == 6)
+		prms->zturn = 0;
+	else if (prms->xturn || prms->yturn || prms->zturn)
+		return (0);
+	else if (keycode == 259)
 		prms->alt = 0;
 	else if (keycode == 69)
 		k_qtrn(&prms->q, 1.25);
@@ -389,13 +451,13 @@ void	ft_put_axis(t_params *prms)
 	double		step;
 	t_vector	v;
 
-	step = 0.01;
+	step = 0.1;
 	ft_bzero(&x, sizeof(t_vector));
 	ft_bzero(&y, sizeof(t_vector));
 	ft_bzero(&z, sizeof(t_vector));
-	x.x = 150;
-	y.y = 150;
-	z.z = 150;
+	x.x = 2;
+	y.y = 2;
+	z.z = 2;
 	ft_bzero(&start, sizeof(t_vector));
 	ft_put_vector(prms, start, x, 0x00ff0000);
 	alpha = 0;
@@ -404,7 +466,7 @@ void	ft_put_axis(t_params *prms)
 		v.x = -3;
 		v.z = sin(alpha);
 		v.y = cos(alpha);
-		k_vector(&v, 10);
+		k_vector(&v, 0.1);
 		ft_put_vector(prms, x, v, 0x00ff0000);
 		alpha += step;
 	}
@@ -415,7 +477,7 @@ void	ft_put_axis(t_params *prms)
 		v.x = sin(alpha);
 		v.y = -3;
 		v.z = cos(alpha);
-		k_vector(&v, 10);
+		k_vector(&v, 0.1);
 		ft_put_vector(prms, y, v, 0x0000ff00);
 		alpha += step;
 	}
@@ -426,10 +488,44 @@ void	ft_put_axis(t_params *prms)
 		v.x = sin(alpha);
 		v.y = cos(alpha);
 		v.z = -3;
-		k_vector(&v, 10);
+		k_vector(&v, 0.1);
 		ft_put_vector(prms, z, v, 0x000000ff);
 		alpha += step;
 	}
+}
+
+void	ft_draw_map(t_params *prms, t_vector from, int i, int j)
+{
+	t_vector	v;
+	int			color;
+
+	int k = 0;
+	while (k < 200000000)
+		k++;
+	v.x = i;
+	v.y = j;
+	v.z = prms->map[j][i][0];
+	printf("%d, %d\n", i, j);
+	color = prms->map[j][i][1];
+	ft_put_vector(prms, from, v, color);
+	from = add_vector(from, v);
+	if (i + 1 < prms->n)
+		ft_draw_map(prms, v, i + 1, j);
+	if (j + 1 < prms->m)
+		ft_draw_map(prms, v, i, j + 1);
+}
+
+t_draw	*new_draw(t_params *prms, t_vector from, int i, int j)
+{
+	t_draw	*tmp;
+
+	tmp = malloc(sizeof(*tmp));
+	tmp->from = from;
+	tmp->v.x = i;
+	tmp->v.y = j;
+	tmp->v.z = prms->map[j][i][0];
+	tmp->color = prms->map[j][i][1];
+	return (tmp);
 }
 
 void	ft_draw(t_params *prms)
@@ -439,22 +535,46 @@ void	ft_draw(t_params *prms)
 	t_vector	v;
 	t_vector	from;
 	t_qtrn		q;
+	t_draw		*buf;
+	t_draw		*tmp;
+	t_elem		*elem;
+	t_queue		*queue;
 
 	mlx_clear_window(prms->mlx, prms->win);
 	ft_put_axis(prms);
-	axis.x = 1;
-	axis.y = 0;
-	axis.z = 0;
-	q = get_qtrn(axis, M_PI / 4);
-	v.x = 1;
-	v.y = 1;
-	v.z = 1;
-	color = 0x00ffffff;
-	k_vector(&v, 200);
-	from.x = 50;
-	from.y = 50;
-	from.z = 50;
-	ft_cube(prms, from, v, color);
+	from.x = 0;
+	from.y = 0;
+	from.z = 0;
+	queue = ft_queue_new();
+	from = add_vector(tmp->from, tmp->v);
+	buf = new_draw(prms, from, 0, 0);
+	ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
+	while (queue->len)
+	{
+		elem = ft_queue_pop(queue);
+		tmp = (t_draw *)elem->content;
+		tmp->v.x++;
+		if (tmp->v.x < prms->n)
+		{
+			ft_put_vector(prms, from, tmp->v, color);
+			tmp->from = add_vector(tmp->from, tmp->v);
+			buf = new_draw(prms, tmp->from, tmp->v.x, tmp->v.y);
+			ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
+		}
+		v.x--;
+		v.y++;
+		if (v.y < prms->m)
+		{
+			ft_put_vector(prms, from, tmp->v, color);
+			tmp->from = add_vector(tmp->from, tmp->v);
+			buf = new_draw(prms, tmp->from, tmp->v.x, tmp->v.y);
+			ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
+		}
+		v.y--;
+		free(tmp);
+		free(elem);
+	}
+	free(queue);
 }
 
 void	fill_map_elem(int *elem, char **str)
@@ -467,8 +587,9 @@ void	fill_map_elem(int *elem, char **str)
 	while (ft_isdigit(**str))
 		elem[0] = elem[0] * 10 + *(*str)++ - '0';
 	elem[0] *= sign;
-	if (*(*str)++ == ',')
+	if (*(*str) == ',')
 	{
+		(*str)++;
 		while (ft_isdigit(*(++*str)) || \
 				(ft_tolower(**str) >= 'a' && ft_tolower(**str) <= 'f'))
 		{
@@ -479,7 +600,6 @@ void	fill_map_elem(int *elem, char **str)
 			elem[1] <<= 4;
 		}
 	}
-	(*str)--;
 }
 
 void	ft_read(char *file, t_params *prms)
@@ -497,22 +617,33 @@ void	ft_read(char *file, t_params *prms)
 	while ((b = get_next_line(fd, &str) > 0))
 	{
 		map = ft_realloc(map, sizeof(*map) * len, 1);
-		map[len] = malloc(sizeof(**map) * (ft_count_matches(str, " ") + 2));
 		k = 0;
-		map[len][k] = ft_memalloc(sizeof(***map) * 2);
-		fill_map_elem(map[len][k++], &str);
-		while ((str = ft_strchr(str, ' ')))
-			if (*++str == '-' || *str == '+' || ft_isdigit(*str))
+		while (*str)
+		{
+			while (ft_isspace(*str))
+				str++;
+			if (*str == '-' || *str == '+' || ft_isdigit(*str))
 			{
+				map[len] = ft_realloc(map[len], sizeof(**map) * k, 1);
 				map[len][k] = ft_memalloc(sizeof(***map) * 2);
 				fill_map_elem(map[len][k++], &str);
 			}
-		map[len][k] = 0;
+		}
 		len++;
-		free(str);
+		//free(str);
+		if (!prms->n)
+			prms->n = k;
+		else if (prms->n != k)
+		{
+			prms->m = len - 1;
+			close(fd);
+			while (k-- > 0)
+				free(map[prms->m][k]);
+			free(map[prms->m]);
+			ft_exit(ERROR, prms);
+		}
 	}
-	map = ft_realloc(map, sizeof(*map) * len, 1);
-	map[len] = 0;
+	prms->m = len;
 	close(fd);
 	prms->map = map;
 	if (b == -1)
@@ -537,10 +668,10 @@ int		main(int ac, char **av)
 	ft_read(av[1], &prms);
 	int j = -1;
 	if (prms.map)
-		while (prms.map[++j])
+		while (++j < prms.m)
 		{
 			int i = -1;
-			while (prms.map[j][++i])
+			while (++i < prms.n)
 				printf("%d ", prms.map[j][i][0]);
 			printf("\n");
 		}
