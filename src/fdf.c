@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 16:16:10 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/01 16:20:55 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -548,7 +548,7 @@ void	ft_draw(t_params *prms)
 	queue = ft_queue_new();
 	from = add_vector(tmp->from, tmp->v);
 	buf = new_draw(prms, from, 0, 0);
-	ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
+	//ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
 	while (queue->len)
 	{
 		elem = ft_queue_pop(queue);
@@ -561,17 +561,17 @@ void	ft_draw(t_params *prms)
 			buf = new_draw(prms, tmp->from, tmp->v.x, tmp->v.y);
 			ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
 		}
-		v.x--;
-		v.y++;
-		if (v.y < prms->m)
+		tmp->v.x--;
+		tmp->v.y++;
+		if (tmp->v.y < prms->m)
 		{
 			ft_put_vector(prms, from, tmp->v, color);
 			tmp->from = add_vector(tmp->from, tmp->v);
 			buf = new_draw(prms, tmp->from, tmp->v.x, tmp->v.y);
 			ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
 		}
-		v.y--;
-		free(tmp);
+		tmp->v.y--;
+//		free(tmp);
 		free(elem);
 	}
 	free(queue);
