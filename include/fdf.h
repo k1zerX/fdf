@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:58 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 10:04:35 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/01 11:21:54 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,12 +47,14 @@ typedef struct		s_params
 {
 	void			*mlx;
 	void			*win;
-	int				n;
-	int				m;
+	int				x;
+	int				y;
 	t_point			shift;
 	t_qtrn			q;
 	char			alt;
-	int				**map;
+	int				***map;
+	int				n;
+	int				m;
 }					t_params;
 
 #endif

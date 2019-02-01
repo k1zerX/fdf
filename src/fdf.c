@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 10:01:34 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/01 12:14:55 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ t_qtrn			*g_qx = NULL;
 t_qtrn			*g_qy = NULL;
 int				g_shift = 0;
 
-void	ft_draw(t_params *prms);
+void		ft_draw(t_params *prms);
 void		k_qtrn(t_qtrn *q, double k);
 
 void		ft_put_pixel(t_params *prms, int x, int y, int color, double opacity, char is)
@@ -26,6 +26,38 @@ void		ft_put_pixel(t_params *prms, int x, int y, int color, double opacity, char
 		mlx_pixel_put(prms->mlx, prms->win, y + prms->shift.x, x + prms->shift.y, color);
 	else
 		mlx_pixel_put(prms->mlx, prms->win, x + prms->shift.x, y + prms->shift.y, color);
+}
+
+void		ft_put_line_fast(t_params *prms, t_point p0, t_point p1, int color)
+{
+	char	is;
+	int		x;
+	int		xend;
+	double	k;
+
+	if ((is = fabs(p1.y - p0.y) > fabs(p1.x - p0.x)))
+	{
+		ft_swap(&p0.x, &p0.y, sizeof(p0.x));
+		ft_swap(&p1.x, &p1.y, sizeof(p1.x));
+	}
+	if (p0.x > p1.x)
+	{
+		ft_swap(&p0.x, &p1.x, sizeof(p0.x));
+		ft_swap(&p0.y, &p1.y, sizeof(p0.y));
+	}
+	k = (p1.y - p0.y) / (p1.x - p0.x);
+	xend = round(p1.x);
+	p1.y = k * modf(p0.x, (&p1.x));
+	x = (int)p1.x;
+	if (round(p1.y))
+		p0.y += p1.y;
+	else
+		p0.y -= p1.y;
+	while (x <= xend)
+	{
+		ft_put_pixel(prms, x, round(p0.y), color, 1, is);
+		p0.y += k;
+	}
 }
 
 void		ft_put_line(t_params *prms, t_point p0, t_point p1, int color)
@@ -236,10 +268,10 @@ void		ft_initialize(t_params *prms)
 	axis.y = 0;
 	axis.z = 0;
 	*g_qy = get_qtrn(axis, Y_ANGLE);
-	if (!prms->n || !prms->m)
+	if (!prms->x || !prms->y)
 	{
-		prms->n = 1000;
-		prms->m = 1000;
+		prms->x = 1000;
+		prms->y = 1000;
 	}
 	prms->shift.x = 300;
 	prms->shift.y = 300;
@@ -427,18 +459,27 @@ void	ft_draw(t_params *prms)
 
 void	fill_map_elem(int *elem, char **str)
 {
-	while (ft_isnumber(*str))
+	char	sign;
+
+	sign = 1;
+	if (**str == '-' || **str == '+')
+		sign = 44 - *(*str)++;
+	while (ft_isdigit(**str))
 		elem[0] = elem[0] * 10 + *(*str)++ - '0';
-	if (*(*str++) == ',')
-		while (ft_isnumber(*(++*str)) || \
-				ft_tolower(**str) >= 'a' && ft_tolower(**str) <= 'f')
+	elem[0] *= sign;
+	if (*(*str)++ == ',')
+	{
+		while (ft_isdigit(*(++*str)) || \
+				(ft_tolower(**str) >= 'a' && ft_tolower(**str) <= 'f'))
 		{
-			if (ft_isnumber(**str))
+			if (ft_isdigit(**str))
 				elem[1] |= **str - '0';
 			else
 				elem[1] |= **str - 'a' + 10;
 			elem[1] <<= 4;
 		}
+	}
+	(*str)--;
 }
 
 void	ft_read(char *file, t_params *prms)
@@ -453,18 +494,24 @@ void	ft_read(char *file, t_params *prms)
 	map = NULL;
 	len = 0;
 	fd = open(file, O_RDONLY);
-	while ((b = get_next_line(fd, str) > 0))
+	while ((b = get_next_line(fd, &str) > 0))
 	{
-		map = ft_realloc(sizeof(*map), len, 1);
+		map = ft_realloc(map, sizeof(*map) * len, 1);
 		map[len] = malloc(sizeof(**map) * (ft_count_matches(str, " ") + 1));
 		k = 0;
 		map[len][k] = ft_memalloc(sizeof(***map) * 2);
 		fill_map_elem(map[len][k++], &str);
-		while ((str = ft_strchar(str, ' ')))
-			fill_map_elem(map[len][k++], &str);
+		while ((str = ft_strchr(str, ' ')))
+			if (*++str == '-' || *str == '+' || ft_isdigit(*str))
+			{
+				map[len][k] = ft_memalloc(sizeof(***map) * 2);
+				fill_map_elem(map[len][k++], &str);
+			}
 		len++;
 		free(str);
 	}
+	prms->m = len;
+	prms->n = k;
 	close(fd);
 	prms->map = map;
 	if (b == -1)
@@ -487,9 +534,18 @@ int		main(int ac, char **av)
 			ft_exit(1, NULL);
 	}
 	ft_read(av[1], &prms);
+	int j = -1;
+	if (prms.map)
+		while (++j < prms.m)
+		{
+			int i = -1;
+			while (++i < prms.n)
+				printf("%d ", prms.map[j][i][0]);
+			printf("\n");
+		}
 	ft_initialize(&prms);
 	prms.mlx = mlx_init();
-	prms.win = mlx_new_window(prms.mlx, prms.n, prms.m, "mlx 42");
+	prms.win = mlx_new_window(prms.mlx, prms.x, prms.y, "mlx 42");
 	ft_draw(&prms);
 	mlx_hook(prms.win, 2, 0, &ft_key_press, &prms);
 	mlx_hook(prms.win, 3, 0, &ft_key_release, &prms);

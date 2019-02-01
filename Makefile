@@ -6,7 +6,7 @@
 #    By: kbatz <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/12/02 04:16:06 by kbatz             #+#    #+#              #
-#    Updated: 2019/02/01 10:01:52 by kbatz            ###   ########.fr        #
+#    Updated: 2019/02/01 10:52:54 by kbatz            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,11 +21,11 @@ OBJDIR	= .obj/
 HDRDIR	= include/
 TESTDIR	= test/
 LIBDIR	= $(addsuffix /,$(LIB))
-LHD		= $(LIBDIR)
+LHD		= $(LIBDIR)$(HDRDIR)
 SRC		= $(patsubst $(SRCDIR)%,%,$(wildcard $(SRCDIR)*.c))
 OBJ		= $(SRC:%.c=%.o)
 HDR		= $(wildcard $(HDRDIR)*.h)
-TEST	= $(patsubst $(TESTDIR),%,$(wildcard $(TESTDIR)*))
+TEST	= $(patsubst $(TESTDIR)%,%,$(wildcard $(TESTDIR)*))
 LFLAG   = $(addprefix -L,$(LIBDIR)) $(addprefix -,$(patsubst lib%,l%,$(LIB))) -lmlx -framework OpenGL -framework AppKit
 IFLAG   = $(addprefix -I,$(HDRDIR)) $(addprefix -I,$(LHD))
 CFLAG	= #-Wall -Wextra -Werror
