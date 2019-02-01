@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 12:14:55 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/01 12:23:33 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -497,7 +497,7 @@ void	ft_read(char *file, t_params *prms)
 	while ((b = get_next_line(fd, &str) > 0))
 	{
 		map = ft_realloc(map, sizeof(*map) * len, 1);
-		map[len] = malloc(sizeof(**map) * (ft_count_matches(str, " ") + 1));
+		map[len] = malloc(sizeof(**map) * (ft_count_matches(str, " ") + 2));
 		k = 0;
 		map[len][k] = ft_memalloc(sizeof(***map) * 2);
 		fill_map_elem(map[len][k++], &str);
@@ -507,11 +507,12 @@ void	ft_read(char *file, t_params *prms)
 				map[len][k] = ft_memalloc(sizeof(***map) * 2);
 				fill_map_elem(map[len][k++], &str);
 			}
+		map[len][k] = 0;
 		len++;
 		free(str);
 	}
-	prms->m = len;
-	prms->n = k;
+	map = ft_realloc(map, sizeof(*map) * len, 1);
+	map[len] = 0;
 	close(fd);
 	prms->map = map;
 	if (b == -1)
@@ -536,10 +537,10 @@ int		main(int ac, char **av)
 	ft_read(av[1], &prms);
 	int j = -1;
 	if (prms.map)
-		while (++j < prms.m)
+		while (prms.map[++j])
 		{
 			int i = -1;
-			while (++i < prms.n)
+			while (prms.map[j][++i])
 				printf("%d ", prms.map[j][i][0]);
 			printf("\n");
 		}
