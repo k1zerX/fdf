@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 16:20:55 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/01 18:02:05 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ void		ft_put_line_fast(t_params *prms, t_point p0, t_point p1, int color)
 	{
 		ft_put_pixel(prms, x, round(p0.y), color, 1, is);
 		p0.y += k;
+		x++;
 	}
 }
 
@@ -211,7 +212,7 @@ t_vector	turn_vector(t_vector v, t_qtrn q, char clockwise)
 	return (tmp.v);
 }
 
-void		ft_put_vector(t_params *prms, t_vector from, t_vector v, int color)
+void		ft_put_vector(t_params *prms, t_vector from, t_vector v, int color, char fast)
 {
 	t_point		p0;
 	t_point		p1;
@@ -228,7 +229,10 @@ void		ft_put_vector(t_params *prms, t_vector from, t_vector v, int color)
 	to = turn_vector(to, prms->q, 1);
 	p1.x = to.x;
 	p1.y = to.y;
-	ft_put_line(prms, p0, p1, color);
+	if (!fast)
+		ft_put_line_fast(prms, p0, p1, color);
+	else
+		ft_put_line(prms, p0, p1, color);
 }
 
 void	ft_exit(int status, t_params *prms)
@@ -390,6 +394,45 @@ int			ft_key_release(int keycode, t_params *prms)
 	return (0);
 }
 
+int		ft_mouse_press(int button, int x, int y, t_params *prms)
+{
+	if (prms->xturn)
+	{
+		if (button == 5)
+			prms->q = mul_qtrn(prms->q, *g_qx);
+		else if (button == 4)
+			prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qx));
+	}
+	else if (prms->yturn)
+	{
+		if (button == 5)
+			prms->q = mul_qtrn(prms->q, *g_qy);
+		else if (button == 4)
+			prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qy));
+	}
+	else if (prms->zturn)
+	{
+		if (button == 5)
+			prms->q = mul_qtrn(prms->q, *g_qz);
+		else if (button == 4)
+			prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qz));
+	}
+	else if (button == 4)
+	{
+		prms->shift.x = prms->shift.x + (prms->shift.x - x) / 10;
+		prms->shift.y = prms->shift.y + (prms->shift.y - y) / 10;
+		k_qtrn(&prms->q, 1.25);
+	}
+	else if (button == 5)
+	{
+		prms->shift.x = prms->shift.x - (prms->shift.x - x) / 10;
+		prms->shift.y = prms->shift.y - (prms->shift.y - y) / 10;
+		k_qtrn(&prms->q, 0.8);
+	}
+	ft_draw(prms);
+	return (0);
+}
+
 void	ft_cube(t_params *prms, t_vector from, t_vector v, int color)
 {
 	t_vector	vx, vy, vz;
@@ -409,36 +452,36 @@ void	ft_cube(t_params *prms, t_vector from, t_vector v, int color)
 	beg.x = from.x + 0;
 	beg.y = from.y + 0;
 	beg.z = from.z + 0;
-	ft_put_vector(prms, beg, vx, color);
-	ft_put_vector(prms, beg, vy, color);
-	ft_put_vector(prms, beg, vz, color);
+	ft_put_vector(prms, beg, vx, color, 1);
+	ft_put_vector(prms, beg, vy, color, 1);
+	ft_put_vector(prms, beg, vz, color, 1);
 	beg.x = from.x + v.x;
 	beg.y = from.y + 0;
 	beg.z = from.z + 0;
-	ft_put_vector(prms, beg, vy, color);
-	ft_put_vector(prms, beg, vz, color);
+	ft_put_vector(prms, beg, vy, color, 1);
+	ft_put_vector(prms, beg, vz, color, 1);
 	beg.x = from.x + 0;
 	beg.y = from.y + v.y;
 	beg.z = from.z + 0;
-	ft_put_vector(prms, beg, vx, color);
-	ft_put_vector(prms, beg, vz, color);
+	ft_put_vector(prms, beg, vx, color, 1);
+	ft_put_vector(prms, beg, vz, color, 1);
 	beg.x = from.x + 0;
 	beg.y = from.y + 0;
 	beg.z = from.z + v.z;
-	ft_put_vector(prms, beg, vx, color);
-	ft_put_vector(prms, beg, vy, color);
+	ft_put_vector(prms, beg, vx, color, 1);
+	ft_put_vector(prms, beg, vy, color, 1);
 	beg.x = from.x + 0;
 	beg.y = from.y + v.y;
 	beg.z = from.z + v.z;
-	ft_put_vector(prms, beg, vx, color);
+	ft_put_vector(prms, beg, vx, color, 1);
 	beg.x = from.x + v.x;
 	beg.y = from.y + 0;
 	beg.z = from.z + v.z;
-	ft_put_vector(prms, beg, vy, color);
+	ft_put_vector(prms, beg, vy, color, 1);
 	beg.x = from.x + v.x;
 	beg.y = from.y + v.y;
 	beg.z = from.z + 0;
-	ft_put_vector(prms, beg, vz, color);
+	ft_put_vector(prms, beg, vz, color, 1);
 }
 
 void	ft_put_axis(t_params *prms)
@@ -459,7 +502,7 @@ void	ft_put_axis(t_params *prms)
 	y.y = 2;
 	z.z = 2;
 	ft_bzero(&start, sizeof(t_vector));
-	ft_put_vector(prms, start, x, 0x00ff0000);
+	ft_put_vector(prms, start, x, 0x00ff0000, 0);
 	alpha = 0;
 	while (alpha < M_PI * 2)
 	{
@@ -467,10 +510,10 @@ void	ft_put_axis(t_params *prms)
 		v.z = sin(alpha);
 		v.y = cos(alpha);
 		k_vector(&v, 0.1);
-		ft_put_vector(prms, x, v, 0x00ff0000);
+		ft_put_vector(prms, x, v, 0x00ff0000, 0);
 		alpha += step;
 	}
-	ft_put_vector(prms, start, y, 0x0000ff00);
+	ft_put_vector(prms, start, y, 0x0000ff00, 0);
 	alpha = 0;
 	while (alpha < M_PI * 2)
 	{
@@ -478,10 +521,10 @@ void	ft_put_axis(t_params *prms)
 		v.y = -3;
 		v.z = cos(alpha);
 		k_vector(&v, 0.1);
-		ft_put_vector(prms, y, v, 0x0000ff00);
+		ft_put_vector(prms, y, v, 0x0000ff00, 0);
 		alpha += step;
 	}
-	ft_put_vector(prms, start, z, 0x000000ff);
+	ft_put_vector(prms, start, z, 0x000000ff, 0);
 	alpha = 0;
 	while (alpha < M_PI * 2)
 	{
@@ -489,7 +532,7 @@ void	ft_put_axis(t_params *prms)
 		v.y = cos(alpha);
 		v.z = -3;
 		k_vector(&v, 0.1);
-		ft_put_vector(prms, z, v, 0x000000ff);
+		ft_put_vector(prms, z, v, 0x000000ff, 0);
 		alpha += step;
 	}
 }
@@ -507,7 +550,7 @@ void	ft_draw_map(t_params *prms, t_vector from, int i, int j)
 	v.z = prms->map[j][i][0];
 	printf("%d, %d\n", i, j);
 	color = prms->map[j][i][1];
-	ft_put_vector(prms, from, v, color);
+	ft_put_vector(prms, from, v, color, 1);
 	from = add_vector(from, v);
 	if (i + 1 < prms->n)
 		ft_draw_map(prms, v, i + 1, j);
@@ -525,6 +568,8 @@ t_draw	*new_draw(t_params *prms, t_vector from, int i, int j)
 	tmp->v.y = j;
 	tmp->v.z = prms->map[j][i][0];
 	tmp->color = prms->map[j][i][1];
+	if (!tmp->color)
+		tmp->color = 0x00ffffff;
 	return (tmp);
 }
 
@@ -535,20 +580,26 @@ void	ft_draw(t_params *prms)
 	t_vector	v;
 	t_vector	from;
 	t_qtrn		q;
-	t_draw		*buf;
 	t_draw		*tmp;
 	t_elem		*elem;
 	t_queue		*queue;
+	t_draw		*buf;
 
 	mlx_clear_window(prms->mlx, prms->win);
 	ft_put_axis(prms);
+	from.x = 0.5;
+	from.y = 0.5;
+	from.z = 0.5;
+	v.x = 1;
+	v.y = 1;
+	v.z = 1;
+	ft_cube(prms, from, v, 0x00ffffff);
+	queue = ft_queue_new();
 	from.x = 0;
 	from.y = 0;
 	from.z = 0;
-	queue = ft_queue_new();
-	from = add_vector(tmp->from, tmp->v);
 	buf = new_draw(prms, from, 0, 0);
-	//ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
+/*	ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
 	while (queue->len)
 	{
 		elem = ft_queue_pop(queue);
@@ -556,7 +607,7 @@ void	ft_draw(t_params *prms)
 		tmp->v.x++;
 		if (tmp->v.x < prms->n)
 		{
-			ft_put_vector(prms, from, tmp->v, color);
+			ft_put_vector(prms, from, tmp->v, color, 1);
 			tmp->from = add_vector(tmp->from, tmp->v);
 			buf = new_draw(prms, tmp->from, tmp->v.x, tmp->v.y);
 			ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
@@ -565,16 +616,16 @@ void	ft_draw(t_params *prms)
 		tmp->v.y++;
 		if (tmp->v.y < prms->m)
 		{
-			ft_put_vector(prms, from, tmp->v, color);
+			ft_put_vector(prms, from, tmp->v, color, 1);
 			tmp->from = add_vector(tmp->from, tmp->v);
 			buf = new_draw(prms, tmp->from, tmp->v.x, tmp->v.y);
 			ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
 		}
 		tmp->v.y--;
-//		free(tmp);
+		free(tmp);
 		free(elem);
 	}
-	free(queue);
+	free(queue);/*/
 }
 
 void	fill_map_elem(int *elem, char **str)
@@ -682,6 +733,7 @@ int		main(int ac, char **av)
 	mlx_hook(prms.win, 2, 0, &ft_key_press, &prms);
 	mlx_hook(prms.win, 3, 0, &ft_key_release, &prms);
 	mlx_hook(prms.win, 17, 0, &ft_close, &prms);
+	mlx_hook(prms.win, 4, 0, &ft_mouse_press, &prms);
 	mlx_loop(prms.mlx);
 	return (0);
 }
