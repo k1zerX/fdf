@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 18:02:05 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/05 05:16:47 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,19 +216,15 @@ void		ft_put_vector(t_params *prms, t_vector from, t_vector v, int color, char f
 {
 	t_point		p0;
 	t_point		p1;
-	t_point		tmp;
-	t_vector	to;
 	int			new_color;
 
-	tmp.x = 0;
-	tmp.y = 0;
-	to = add_vector(from, v);
+	//v = add_vector(from, v);
 	from = turn_vector(from, prms->q, 1);
 	p0.x = from.x;
 	p0.y = from.y;
-	to = turn_vector(to, prms->q, 1);
-	p1.x = to.x;
-	p1.y = to.y;
+	v = turn_vector(v, prms->q, 1);
+	p1.x = v.x;
+	p1.y = v.y;
 	if (!fast)
 		ft_put_line_fast(prms, p0, p1, color);
 	else
@@ -299,7 +295,7 @@ void		ft_initialize(t_params *prms)
 	prms->q.w = 1;
 	ft_bzero(&prms->q.v, sizeof(prms->q.v));
 	g_shift = (int)sqrt(prms->x * prms->y) / 40;
-	k_qtrn(&prms->q, 10);
+	k_qtrn(&prms->q, 2);
 }
 
 int			ft_alt_key_press(int keycode, t_params *prms)
@@ -558,16 +554,15 @@ void	ft_draw_map(t_params *prms, t_vector from, int i, int j)
 		ft_draw_map(prms, v, i, j + 1);
 }
 
-t_draw	*new_draw(t_params *prms, t_vector from, int i, int j)
+t_draw	*new_draw(t_params *prms, double i, double j)
 {
 	t_draw	*tmp;
 
 	tmp = malloc(sizeof(*tmp));
-	tmp->from = from;
 	tmp->v.x = i;
 	tmp->v.y = j;
-	tmp->v.z = prms->map[j][i][0];
-	tmp->color = prms->map[j][i][1];
+	tmp->v.z = prms->map[(int)j][(int)i][0];
+	tmp->color = prms->map[(int)j][(int)i][1];
 	if (!tmp->color)
 		tmp->color = 0x00ffffff;
 	return (tmp);
@@ -586,46 +581,45 @@ void	ft_draw(t_params *prms)
 	t_draw		*buf;
 
 	mlx_clear_window(prms->mlx, prms->win);
-	ft_put_axis(prms);
+	//ft_put_axis(prms);
 	from.x = 0.5;
 	from.y = 0.5;
 	from.z = 0.5;
 	v.x = 1;
 	v.y = 1;
 	v.z = 1;
-	ft_cube(prms, from, v, 0x00ffffff);
+	//ft_cube(prms, from, v, 0x00ffffff);
 	queue = ft_queue_new();
-	from.x = 0;
-	from.y = 0;
-	from.z = 0;
-	buf = new_draw(prms, from, 0, 0);
-/*	ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
+	buf = new_draw(prms, 0, 0);
+	ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 	while (queue->len)
 	{
 		elem = ft_queue_pop(queue);
 		tmp = (t_draw *)elem->content;
-		tmp->v.x++;
+		tmp->from = tmp->v;
+		tmp->v.x += 1;
 		if (tmp->v.x < prms->n)
 		{
+			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
 			ft_put_vector(prms, from, tmp->v, color, 1);
-			tmp->from = add_vector(tmp->from, tmp->v);
-			buf = new_draw(prms, tmp->from, tmp->v.x, tmp->v.y);
-			ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
+			buf = new_draw(prms, tmp->v.x, tmp->v.y);
+			ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 		}
-		tmp->v.x--;
-		tmp->v.y++;
+		tmp->v.x -= 1;
+		tmp->v.y += 1;
 		if (tmp->v.y < prms->m)
 		{
+			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
 			ft_put_vector(prms, from, tmp->v, color, 1);
-			tmp->from = add_vector(tmp->from, tmp->v);
-			buf = new_draw(prms, tmp->from, tmp->v.x, tmp->v.y);
-			ft_queue_push(queue, ft_new_elem(&buf, sizeof(buf), 0));
+			buf = new_draw(prms, tmp->v.x, tmp->v.y);
+			if (!tmp->v.x)
+				ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 		}
-		tmp->v.y--;
+		tmp->v.y -= 1;
 		free(tmp);
 		free(elem);
 	}
-	free(queue);/*/
+	free(queue);
 }
 
 void	fill_map_elem(int *elem, char **str)
@@ -717,15 +711,15 @@ int		main(int ac, char **av)
 			ft_exit(1, NULL);
 	}
 	ft_read(av[1], &prms);
-	int j = -1;
-	if (prms.map)
-		while (++j < prms.m)
-		{
-			int i = -1;
-			while (++i < prms.n)
-				printf("%d ", prms.map[j][i][0]);
-			printf("\n");
-		}
+//	int j = -1;
+//	if (prms.map)
+//		while (++j < prms.m)
+//		{
+//			int i = -1;
+//			while (++i < prms.n)
+//				printf("%d ", prms.map[j][i][0]);
+//			printf("\n");
+//		}
 	ft_initialize(&prms);
 	prms.mlx = mlx_init();
 	prms.win = mlx_new_window(prms.mlx, prms.x, prms.y, "mlx 42");

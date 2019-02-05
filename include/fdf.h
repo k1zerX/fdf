@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:58 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 17:13:57 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/01 19:13:30 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ typedef struct		s_draw
 	t_vector		from;
 	t_vector		v;
 	int				color;
+	char			isy;
 }					t_draw;
 
 #endif
