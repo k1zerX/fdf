@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:58 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 19:13:30 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/14 21:38:36 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # define CLOSE 0
 # define USAGE 1
 # define ERROR 2
+# define READ_ERROR 3
 # define ANGLE 0.25
 
 typedef struct		s_point
@@ -28,6 +29,12 @@ typedef struct		s_point
 	double			x;
 	double			y;
 }					t_point;
+
+typedef struct		s_gradient
+{
+	int				from;
+	int				to;
+}					t_gradient;
 
 typedef struct		s_vector
 {

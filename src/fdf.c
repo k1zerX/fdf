@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/05 05:16:47 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/14 21:39:37 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void		ft_put_pixel(t_params *prms, int x, int y, int color, double opacity, char
 		mlx_pixel_put(prms->mlx, prms->win, x + prms->shift.x, y + prms->shift.y, color);
 }
 
-void		ft_put_line_fast(t_params *prms, t_point p0, t_point p1, int color)
+void		ft_put_line_fast(t_params *prms, t_vector p0, t_vector p1, int color)
 {
 	char	is;
 	int		x;
@@ -62,7 +62,7 @@ void		ft_put_line_fast(t_params *prms, t_point p0, t_point p1, int color)
 	}
 }
 
-void		ft_put_line(t_params *prms, t_point p0, t_point p1, int color)
+void		ft_put_line(t_params *prms, t_vector p0, t_vector p1, int color)
 {
 	double	k;
 	double	yend;
@@ -212,23 +212,18 @@ t_vector	turn_vector(t_vector v, t_qtrn q, char clockwise)
 	return (tmp.v);
 }
 
-void		ft_put_vector(t_params *prms, t_vector from, t_vector v, int color, char fast)
+void		ft_put_vector(t_params *prms, t_vector from, t_vector to, int color, char fast)
 {
-	t_point		p0;
-	t_point		p1;
 	int			new_color;
 
 	//v = add_vector(from, v);
 	from = turn_vector(from, prms->q, 1);
-	p0.x = from.x;
-	p0.y = from.y;
-	v = turn_vector(v, prms->q, 1);
-	p1.x = v.x;
-	p1.y = v.y;
+	to = turn_vector(to, prms->q, 1);
+	//printf("%f, %f, %f\n", from.x, from.y, from.z);
 	if (!fast)
-		ft_put_line_fast(prms, p0, p1, color);
+		ft_put_line_fast(prms, from, to, color);
 	else
-		ft_put_line(prms, p0, p1, color);
+		ft_put_line(prms, from, to, color);
 }
 
 void	ft_exit(int status, t_params *prms)
@@ -237,7 +232,7 @@ void	ft_exit(int status, t_params *prms)
 
 	if (status == USAGE)
 		write(1, "usage:\n\t./fdf [file_name]\n\t./fdf [file_name] [size_x > 0] [size_y > 0]\n", 71);
-	else if (status == CLOSE || status == ERROR)
+	else if (status == CLOSE || status == ERROR || status == READ_ERROR)
 	{
 		while (prms->m-- > 0)
 		{
@@ -247,11 +242,11 @@ void	ft_exit(int status, t_params *prms)
 			free(prms->map[prms->m]);
 		}
 		free(prms->map);
-		prms->map = NULL;
 		free(g_qx);
 		free(g_qy);
-		mlx_destroy_window(prms->mlx, prms->win);
-		if (status == ERROR)
+		if (status != READ_ERROR)
+			mlx_destroy_window(prms->mlx, prms->win);
+		if (status == ERROR || status == READ_ERROR)
 			write(2, "Error\n", 6);
 	}
 	exit(0);
@@ -317,6 +312,7 @@ int			ft_x_press(int keycode, t_params *prms)
 		prms->q = mul_qtrn(prms->q, *g_qx);
 	else if (keycode == 78)
 		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qx));
+	ft_draw(prms);
 	return (0);
 }
 
@@ -326,6 +322,7 @@ int			ft_y_press(int keycode, t_params *prms)
 		prms->q = mul_qtrn(prms->q, *g_qy);
 	else if (keycode == 78)
 		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qy));
+	ft_draw(prms);
 	return (0);
 }
 
@@ -335,6 +332,7 @@ int			ft_z_press(int keycode, t_params *prms)
 		prms->q = mul_qtrn(prms->q, *g_qz);
 	else if (keycode == 78)
 		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qz));
+	ft_draw(prms);
 	return (0);
 }
 
@@ -494,9 +492,9 @@ void	ft_put_axis(t_params *prms)
 	ft_bzero(&x, sizeof(t_vector));
 	ft_bzero(&y, sizeof(t_vector));
 	ft_bzero(&z, sizeof(t_vector));
-	x.x = 2;
-	y.y = 2;
-	z.z = 2;
+	x.x = 20;
+	y.y = 20;
+	z.z = 20;
 	ft_bzero(&start, sizeof(t_vector));
 	ft_put_vector(prms, start, x, 0x00ff0000, 0);
 	alpha = 0;
@@ -505,7 +503,8 @@ void	ft_put_axis(t_params *prms)
 		v.x = -3;
 		v.z = sin(alpha);
 		v.y = cos(alpha);
-		k_vector(&v, 0.1);
+		k_vector(&v, 0.5);
+		v = add_vector(v, x);
 		ft_put_vector(prms, x, v, 0x00ff0000, 0);
 		alpha += step;
 	}
@@ -516,7 +515,8 @@ void	ft_put_axis(t_params *prms)
 		v.x = sin(alpha);
 		v.y = -3;
 		v.z = cos(alpha);
-		k_vector(&v, 0.1);
+		k_vector(&v, 0.5);
+		v = add_vector(v, y);
 		ft_put_vector(prms, y, v, 0x0000ff00, 0);
 		alpha += step;
 	}
@@ -527,44 +527,20 @@ void	ft_put_axis(t_params *prms)
 		v.x = sin(alpha);
 		v.y = cos(alpha);
 		v.z = -3;
-		k_vector(&v, 0.1);
+		k_vector(&v, 0.5);
+		v = add_vector(v, z);
 		ft_put_vector(prms, z, v, 0x000000ff, 0);
 		alpha += step;
 	}
 }
 
-void	ft_draw_map(t_params *prms, t_vector from, int i, int j)
-{
-	t_vector	v;
-	int			color;
-
-	int k = 0;
-	while (k < 200000000)
-		k++;
-	v.x = i;
-	v.y = j;
-	v.z = prms->map[j][i][0];
-	printf("%d, %d\n", i, j);
-	color = prms->map[j][i][1];
-	ft_put_vector(prms, from, v, color, 1);
-	from = add_vector(from, v);
-	if (i + 1 < prms->n)
-		ft_draw_map(prms, v, i + 1, j);
-	if (j + 1 < prms->m)
-		ft_draw_map(prms, v, i, j + 1);
-}
-
-t_draw	*new_draw(t_params *prms, double i, double j)
+t_draw	*new_draw(t_params *prms, t_vector v)
 {
 	t_draw	*tmp;
 
 	tmp = malloc(sizeof(*tmp));
-	tmp->v.x = i;
-	tmp->v.y = j;
-	tmp->v.z = prms->map[(int)j][(int)i][0];
-	tmp->color = prms->map[(int)j][(int)i][1];
-	if (!tmp->color)
-		tmp->color = 0x00ffffff;
+	tmp->v = v;
+	//printf("|||DRAAAW: %f, %f, %f|||\n", tmp->v.x, tmp->v.y, tmp->v.z);
 	return (tmp);
 }
 
@@ -580,40 +556,50 @@ void	ft_draw(t_params *prms)
 	t_queue		*queue;
 	t_draw		*buf;
 
+	g_shift = (int)sqrt(prms->x * prms->y) / 200 * mod_qtrn(prms->q);
 	mlx_clear_window(prms->mlx, prms->win);
-	//ft_put_axis(prms);
-	from.x = 0.5;
-	from.y = 0.5;
-	from.z = 0.5;
+	ft_put_axis(prms);
+	from.x = 0.0;
+	from.y = 0.0;
+	from.z = prms->map[0][0][0];
 	v.x = 1;
 	v.y = 1;
 	v.z = 1;
 	//ft_cube(prms, from, v, 0x00ffffff);
 	queue = ft_queue_new();
-	buf = new_draw(prms, 0, 0);
+	buf = new_draw(prms, from);
 	ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 	while (queue->len)
 	{
 		elem = ft_queue_pop(queue);
 		tmp = (t_draw *)elem->content;
-		tmp->from = tmp->v;
+		from = tmp->v;
+		//printf("\nfrom: %f, %f, %f\n", from.x, from.y, from.z);
 		tmp->v.x += 1;
 		if (tmp->v.x < prms->n)
 		{
+			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
+			tmp->color = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
+			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
 			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
-			ft_put_vector(prms, from, tmp->v, color, 1);
-			buf = new_draw(prms, tmp->v.x, tmp->v.y);
+			ft_put_vector(prms, from, tmp->v, tmp->color, 1);
+			buf = new_draw(prms, tmp->v);
 			ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 		}
 		tmp->v.x -= 1;
 		tmp->v.y += 1;
 		if (tmp->v.y < prms->m)
 		{
+			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
+			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
+			tmp->color = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
 			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
-			ft_put_vector(prms, from, tmp->v, color, 1);
-			buf = new_draw(prms, tmp->v.x, tmp->v.y);
+			ft_put_vector(prms, from, tmp->v, tmp->color, 1);
 			if (!tmp->v.x)
+			{
+				buf = new_draw(prms, tmp->v);
 				ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
+			}
 		}
 		tmp->v.y -= 1;
 		free(tmp);
@@ -634,17 +620,21 @@ void	fill_map_elem(int *elem, char **str)
 	elem[0] *= sign;
 	if (*(*str) == ',')
 	{
-		(*str)++;
+		(*str) += 3;
 		while (ft_isdigit(*(++*str)) || \
 				(ft_tolower(**str) >= 'a' && ft_tolower(**str) <= 'f'))
 		{
+			elem[1] <<= 4;
 			if (ft_isdigit(**str))
 				elem[1] |= **str - '0';
 			else
 				elem[1] |= **str - 'a' + 10;
-			elem[1] <<= 4;
 		}
 	}
+	if (!elem[1])
+		elem[1] = 0x00ffffff;
+	else
+		elem[1] &= 0x00ffffff;
 }
 
 void	ft_read(char *file, t_params *prms)
@@ -661,6 +651,7 @@ void	ft_read(char *file, t_params *prms)
 	fd = open(file, O_RDONLY);
 	while ((b = get_next_line(fd, &str) > 0))
 	{
+		printf("%s\n", str);
 		map = ft_realloc(map, sizeof(*map) * len, 1);
 		k = 0;
 		while (*str)
@@ -680,12 +671,13 @@ void	ft_read(char *file, t_params *prms)
 			prms->n = k;
 		else if (prms->n != k)
 		{
+			prms->map = map;
 			prms->m = len - 1;
 			close(fd);
 			while (k-- > 0)
 				free(map[prms->m][k]);
 			free(map[prms->m]);
-			ft_exit(ERROR, prms);
+			ft_exit(READ_ERROR, prms);
 		}
 	}
 	prms->m = len;
@@ -726,8 +718,8 @@ int		main(int ac, char **av)
 	ft_draw(&prms);
 	mlx_hook(prms.win, 2, 0, &ft_key_press, &prms);
 	mlx_hook(prms.win, 3, 0, &ft_key_release, &prms);
-	mlx_hook(prms.win, 17, 0, &ft_close, &prms);
 	mlx_hook(prms.win, 4, 0, &ft_mouse_press, &prms);
+	mlx_hook(prms.win, 17, 0, &ft_close, &prms);
 	mlx_loop(prms.mlx);
 	return (0);
 }
