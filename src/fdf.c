@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/14 21:39:37 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/14 22:00:56 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,27 @@ int				g_shift = 0;
 void		ft_draw(t_params *prms);
 void		k_qtrn(t_qtrn *q, double k);
 
-void		ft_put_pixel(t_params *prms, int x, int y, int color, double opacity, char is)
+void		ft_put_pixel(t_params *prms, int x, int y, t_gradient gr, double opacity, char is)
 {
-	color |= (int)round((1 - opacity) * 255) << 24;
+	int		color;
+	int		i;
+
+	color = (int)round((1 - opacity) * 255);
+	i = -1;
+	while (++i < 3)
+	{
+		color <<= 8;
+		color |= (int)round((gr.to & 0xff) * gr.k + (gr.from & 0xff) * (1 - gr.k));
+		gr.to >>= 8;
+		gr.from >>= 8;
+	}
 	if (is)
 		mlx_pixel_put(prms->mlx, prms->win, y + prms->shift.x, x + prms->shift.y, color);
 	else
 		mlx_pixel_put(prms->mlx, prms->win, x + prms->shift.x, y + prms->shift.y, color);
 }
 
-void		ft_put_line_fast(t_params *prms, t_vector p0, t_vector p1, int color)
+void		ft_put_line_fast(t_params *prms, t_vector p0, t_vector p1, t_gradient gr)
 {
 	char	is;
 	int		x;
@@ -56,13 +67,13 @@ void		ft_put_line_fast(t_params *prms, t_vector p0, t_vector p1, int color)
 		p0.y -= p1.y;
 	while (x <= xend)
 	{
-		ft_put_pixel(prms, x, round(p0.y), color, 1, is);
+		ft_put_pixel(prms, x, round(p0.y), gr, 1, is);
 		p0.y += k;
 		x++;
 	}
 }
 
-void		ft_put_line(t_params *prms, t_vector p0, t_vector p1, int color)
+void		ft_put_line(t_params *prms, t_vector p0, t_vector p1, t_gradient gradient)
 {
 	double	k;
 	double	yend;
@@ -72,6 +83,7 @@ void		ft_put_line(t_params *prms, t_vector p0, t_vector p1, int color)
 	int		x;
 	int		xend;
 	char	is;
+	double	grk;
 	void *mlx, *win;
 	double x0, y0, x1, y1;
 	mlx = prms->mlx;
@@ -91,26 +103,31 @@ void		ft_put_line(t_params *prms, t_vector p0, t_vector p1, int color)
 		ft_swap(&x0, &x1, sizeof(x0));
 		ft_swap(&y0, &y1, sizeof(y0));
 	}
-	k = (y1 - y0) / (x1 - x0);
+	grk = 1 / (x1 - x0);
+	k = (y1 - y0) * grk;
 	x = round(x0);
 	yend = y0 + k * (x - x0);
 	x0 = 1 - modf(x0 + 0.5, &x0);
 	a = modf(yend, &y0);
-	ft_put_pixel(prms, x, y0, color, (1 - a) * x0, is);
-	ft_put_pixel(prms, x, y0 + 1, color, a * x0, is);
+	gradient.k = 0;
+	ft_put_pixel(prms, x, y0, gradient, (1 - a) * x0, is);
+	ft_put_pixel(prms, x, y0 + 1, gradient, a * x0, is);
 	intery = yend + k;
 	xend = round(x1);
 	yend = y1 + k * (xend - x1);
 	x1 = modf(x1 + 0.5, &x1);
 	a = modf(yend, &y1);
-	ft_put_pixel(prms, xend, y1, color, (1 - a) * x1, is);
-	ft_put_pixel(prms, xend, y1 + 1, color, a * x1, is);
+	gradient.k = 1;
+	ft_put_pixel(prms, xend, y1, gradient, (1 - a) * x1, is);
+	ft_put_pixel(prms, xend, y1 + 1, gradient, a * x1, is);
+	gradient.k = grk;
 	while (++x < xend)
 	{
 		a = modf(intery, &b);
-		ft_put_pixel(prms, x, b, color, 1 - a, is);
-		ft_put_pixel(prms, x, b + 1, color, a, is);
+		ft_put_pixel(prms, x, b, gradient, 1 - a, is);
+		ft_put_pixel(prms, x, b + 1, gradient, a, is);
 		intery += k;
+		gradient.k += grk;
 	}
 }
 
@@ -212,7 +229,7 @@ t_vector	turn_vector(t_vector v, t_qtrn q, char clockwise)
 	return (tmp.v);
 }
 
-void		ft_put_vector(t_params *prms, t_vector from, t_vector to, int color, char fast)
+void		ft_put_vector(t_params *prms, t_vector from, t_vector to, t_gradient gr, char fast)
 {
 	int			new_color;
 
@@ -221,9 +238,9 @@ void		ft_put_vector(t_params *prms, t_vector from, t_vector to, int color, char 
 	to = turn_vector(to, prms->q, 1);
 	//printf("%f, %f, %f\n", from.x, from.y, from.z);
 	if (!fast)
-		ft_put_line_fast(prms, from, to, color);
+		ft_put_line_fast(prms, from, to, gr);
 	else
-		ft_put_line(prms, from, to, color);
+		ft_put_line(prms, from, to, gr);
 }
 
 void	ft_exit(int status, t_params *prms)
@@ -426,7 +443,7 @@ int		ft_mouse_press(int button, int x, int y, t_params *prms)
 	ft_draw(prms);
 	return (0);
 }
-
+/*
 void	ft_cube(t_params *prms, t_vector from, t_vector v, int color)
 {
 	t_vector	vx, vy, vz;
@@ -533,13 +550,14 @@ void	ft_put_axis(t_params *prms)
 		alpha += step;
 	}
 }
-
+*/
 t_draw	*new_draw(t_params *prms, t_vector v)
 {
 	t_draw	*tmp;
 
 	tmp = malloc(sizeof(*tmp));
 	tmp->v = v;
+	tmp->color = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
 	//printf("|||DRAAAW: %f, %f, %f|||\n", tmp->v.x, tmp->v.y, tmp->v.z);
 	return (tmp);
 }
@@ -555,10 +573,11 @@ void	ft_draw(t_params *prms)
 	t_elem		*elem;
 	t_queue		*queue;
 	t_draw		*buf;
+	t_gradient	gr;
 
 	g_shift = (int)sqrt(prms->x * prms->y) / 200 * mod_qtrn(prms->q);
 	mlx_clear_window(prms->mlx, prms->win);
-	ft_put_axis(prms);
+	//ft_put_axis(prms);
 	from.x = 0.0;
 	from.y = 0.0;
 	from.z = prms->map[0][0][0];
@@ -574,15 +593,16 @@ void	ft_draw(t_params *prms)
 		elem = ft_queue_pop(queue);
 		tmp = (t_draw *)elem->content;
 		from = tmp->v;
+		gr.from = tmp->color;
 		//printf("\nfrom: %f, %f, %f\n", from.x, from.y, from.z);
 		tmp->v.x += 1;
 		if (tmp->v.x < prms->n)
 		{
 			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
-			tmp->color = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
+			gr.to = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
 			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
 			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
-			ft_put_vector(prms, from, tmp->v, tmp->color, 1);
+			ft_put_vector(prms, from, tmp->v, gr, 1);
 			buf = new_draw(prms, tmp->v);
 			ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 		}
@@ -592,9 +612,9 @@ void	ft_draw(t_params *prms)
 		{
 			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
 			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
-			tmp->color = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
+			gr.to = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
 			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
-			ft_put_vector(prms, from, tmp->v, tmp->color, 1);
+			ft_put_vector(prms, from, tmp->v, gr, 1);
 			if (!tmp->v.x)
 			{
 				buf = new_draw(prms, tmp->v);
