@@ -1,31 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fdf.h                                              :+:      :+:    :+:   */
+/*   put.h                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/01/06 08:41:58 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/15 19:21:27 by kbatz            ###   ########.fr       */
+/*   Created: 2019/02/15 19:17:19 by kbatz             #+#    #+#             */
+/*   Updated: 2019/02/15 19:22:26 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FDF_H
-# define FDF_H
+#ifndef PUT_H
+# define PUT_H
 
-# include <mlx.h>
-# include <libc.h>
-# include <math.h>
-# include "libft.h"
-# include "structs.h"
-# include "vector.h"
-# include "qtrn.h"
-# include "put.h"
+# include "fdf.h"
 
-# define CLOSE 0
-# define USAGE 1
-# define ERROR 2
-# define READ_ERROR 3
-# define ANGLE M_PI / 13
+void		ft_put_2pixel(t_params *prms, int x, int y, t_gradient gr);
+void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr);
+void		ft_put_line(t_params *prms, t_vector from, t_vector to, t_gradient gr);
 
 #endif

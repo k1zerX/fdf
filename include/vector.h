@@ -1,31 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   fdf.h                                              :+:      :+:    :+:   */
+/*   vector.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/01/06 08:41:58 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/15 19:21:27 by kbatz            ###   ########.fr       */
+/*   Created: 2019/02/15 18:58:04 by kbatz             #+#    #+#             */
+/*   Updated: 2019/02/15 19:05:18 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FDF_H
-# define FDF_H
+#ifndef VECTOR_H
+# define VECTOR_H
 
-# include <mlx.h>
-# include <libc.h>
-# include <math.h>
-# include "libft.h"
-# include "structs.h"
-# include "vector.h"
-# include "qtrn.h"
-# include "put.h"
+#include "fdf.h"
 
-# define CLOSE 0
-# define USAGE 1
-# define ERROR 2
-# define READ_ERROR 3
-# define ANGLE M_PI / 13
+void		k_vector(t_vector *v, double k);
+t_vector	add_vector(t_vector a, t_vector b);
+t_vector	turn_vector(t_vector v, t_qtrn q, char clockwise);
+double		mod_vector(t_vector v);
 
 #endif
