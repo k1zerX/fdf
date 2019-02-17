@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 02:59:10 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 05:13:26 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -414,17 +414,20 @@ void	ft_draw(t_params *prms)
 	if (bufv.z < min.z)
 		min = bufv;
 	//printf("res:\t%f, %f, %f ===>", min.x, min.y, min.z);
-	min = turn_vector(min, prms->q, 0);
+	min = add_vector(turn_vector(min, prms->q, 0), rev_vector(prms->start));
+	min.x = (int)min.x;
+	min.y = (int)min.y;
+	min.z = (int)min.z;
 	//ft_put_cube(prms, bufv, min, gr, 1);
 	//printf("%.0f, %.0f, %.0f\n\n", min.x, min.y, min.z);
 	//printf("w = %f, v = (%f, %f, %f)\n", prms->q.w / 4, prms->q.v.x / 4, prms->q.v.y / 4, prms->q.v.z / 4);
 	//printf("%f, %f, %f\n", prms->start.x, prms->start.y, prms->start.z);
-	g_shift = (int)sqrt(prms->x * prms->y) / 300 * prms->k;
+	g_shift = (int)sqrt(prms->x * prms->y) / 300;
 	ft_put_axis(prms);
 //	from.x = 0.0;
 //	from.y = 0.0;
 //	from.z = prms->map[0][0][0];
-	from = add_vector(min, rev_vector(prms->start));
+	from = min;
 	queue = ft_queue_new();
 	buf = new_draw(prms, from);
 	ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
@@ -435,8 +438,8 @@ void	ft_draw(t_params *prms)
 		from = tmp->v;
 		gr.from = tmp->color;
 		//printf("\nfrom: %f, %f, %f\n", from.x, from.y, from.z);
-		tmp->v.x -= FT_SIGN(min.x);
-		if (tmp->v.x < prms->n)
+		tmp->v.x += FT_SIGN(-min.x);
+		if (tmp->v.x < prms->n && tmp->v.x >= 0)
 		{
 			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
 			gr.to = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
@@ -446,22 +449,22 @@ void	ft_draw(t_params *prms)
 			buf = new_draw(prms, tmp->v);
 			ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 		}
-		tmp->v.x += FT_SIGN(min.x);
-		tmp->v.y -= FT_SIGN(min.y);
-		if (tmp->v.y < prms->m)
+		tmp->v.x -= FT_SIGN(-min.x);
+		tmp->v.y += FT_SIGN(-min.y);
+		if (tmp->v.y < prms->m && tmp->v.y >= 0)
 		{
 			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
 			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
 			gr.to = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
 			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
 			ft_put_line(prms, from, tmp->v, gr);
-			if (!tmp->v.x)
+			if (tmp->v.x == min.x)
 			{
 				buf = new_draw(prms, tmp->v);
 				ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 			}
 		}
-		tmp->v.y += FT_SIGN(min.y);
+		tmp->v.y -= FT_SIGN(-min.y);
 		free(tmp);
 		free(elem);
 	}
@@ -565,11 +568,14 @@ void	ft_read(char *file, t_params *prms)
 	prms->start.z = -(double)(min + max) / 2;
 	if (b == -1)
 		ft_exit(ERROR, prms);
+//	max -= min;
 	j = len;
 	while (j-- > 0)
 	{
 		i = k;
 		while (i-- > 0)
+		{
+//			map[j][i][0] -= min;
 			if (!map[j][i][1])
 			{
 				if (min == max)
@@ -580,6 +586,7 @@ void	ft_read(char *file, t_params *prms)
 			}
 			else
 				map[j][i][1] &= 0x00ffffff;
+		}
 	}
 }
 

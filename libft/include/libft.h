@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/20 17:48:49 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/01 12:58:29 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 03:05:54 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@
 # define LOG_PR 0.000001
 # define LOG_ADD_PR 1000000
 
-# define ABS(x) (x < 0 ? -(x) : x)
-# define SIGN(x) (x < 0 -1 : 1)
+# define FT_ABS(x) (x < 0 ? -(x) : x)
+# define FT_SIGN(x) (x < 0 ? -1 : 1)
 # define FT_MIN(a,b) (a < b ? a : b)
 # define FT_MAX(a,b) (a > b ? a : b)
 
