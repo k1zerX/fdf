@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 09:12:39 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 09:13:53 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -309,6 +309,7 @@ void	ft_draw(t_params *prms)
 	ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 	while (queue->len)
 	{
+		printf("not to draw lines which are outside the window's borders, fix angles in qtrns & manage correctly hidden surfaces\n");
 		elem = ft_queue_pop(queue);
 		tmp = (t_draw *)elem->content;
 		from = tmp->v;
