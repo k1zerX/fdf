@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:02:37 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/15 19:04:21 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 02:57:33 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,12 @@
 double		mod_vector(t_vector v)
 {
 	return (sqrt(v.x * v.x + v.y * v.y + v.z * v.z));
+}
+
+t_vector	rev_vector(t_vector v)
+{
+	k_vector(&v, -1);
+	return (v);
 }
 
 void		k_vector(t_vector *v, double k)

@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:06:59 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/15 21:11:26 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 01:33:14 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,10 @@ void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 
 void		ft_put_line(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 {
-	from = turn_vector(from, prms->q, 1);
-	to = turn_vector(to, prms->q, 1);
+	from = turn_vector(add_vector(from, prms->start), prms->q, 1);
+	to = turn_vector(add_vector(to, prms->start), prms->q, 1);
+	k_vector(&from, prms->k);
+	k_vector(&to, prms->k);
 	if ((gr.inv = (fabs(to.y - from.y) > fabs(to.x - from.x))))
 	{
 		ft_swap(&from.x, &from.y, sizeof(from.x));

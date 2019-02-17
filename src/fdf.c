@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/15 21:44:05 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 02:59:10 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ t_qtrn			*g_qy = NULL;
 t_qtrn			*g_qz = NULL;
 int				g_shift = 0;
 
-void		ft_draw(t_params *prms);
+void	ft_draw(t_params *prms);
 
 void	ft_exit(int status, t_params *prms)
 {
@@ -45,13 +45,13 @@ void	ft_exit(int status, t_params *prms)
 	exit(0);
 }
 
-int			ft_close(t_params *prms)
+int		ft_close(t_params *prms)
 {
 	ft_exit(CLOSE, prms);
 	return (0);
 }
 
-void		ft_initialize(t_params *prms)
+void	ft_initialize(t_params *prms)
 {
 	t_vector		axis;
 
@@ -83,10 +83,10 @@ void		ft_initialize(t_params *prms)
 	prms->q.w = 1;
 	ft_bzero(&prms->q.v, sizeof(prms->q.v));
 	g_shift = (int)sqrt(prms->x * prms->y) / 40;
-	k_qtrn(&prms->q, 2);
+	prms->k = 4;
 }
 
-int			ft_alt_key_press(int keycode, t_params *prms)
+int		ft_alt_key_press(int keycode, t_params *prms)
 {
 	if (keycode == 123)
 		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qx));
@@ -99,7 +99,7 @@ int			ft_alt_key_press(int keycode, t_params *prms)
 	return (0);
 }
 
-int			ft_x_press(int keycode, t_params *prms)
+int		ft_x_press(int keycode, t_params *prms)
 {
 	if (keycode == 69)
 		prms->q = mul_qtrn(prms->q, *g_qx);
@@ -109,7 +109,7 @@ int			ft_x_press(int keycode, t_params *prms)
 	return (0);
 }
 
-int			ft_y_press(int keycode, t_params *prms)
+int		ft_y_press(int keycode, t_params *prms)
 {
 	if (keycode == 69)
 		prms->q = mul_qtrn(prms->q, *g_qy);
@@ -119,7 +119,7 @@ int			ft_y_press(int keycode, t_params *prms)
 	return (0);
 }
 
-int			ft_z_press(int keycode, t_params *prms)
+int		ft_z_press(int keycode, t_params *prms)
 {
 	if (keycode == 69)
 		prms->q = mul_qtrn(prms->q, *g_qz);
@@ -129,7 +129,7 @@ int			ft_z_press(int keycode, t_params *prms)
 	return (0);
 }
 
-int			ft_key_press(int keycode, t_params *prms)
+int		ft_key_press(int keycode, t_params *prms)
 {
 	if (prms->alt)
 		ft_alt_key_press(keycode, prms);
@@ -161,7 +161,7 @@ int			ft_key_press(int keycode, t_params *prms)
 	return (0);
 }
 
-int			ft_key_release(int keycode, t_params *prms)
+int		ft_key_release(int keycode, t_params *prms)
 {
 	if (keycode == 7)
 		prms->xturn = 0;
@@ -174,16 +174,23 @@ int			ft_key_release(int keycode, t_params *prms)
 	else if (keycode == 259)
 		prms->alt = 0;
 	else if (keycode == 69)
-		k_qtrn(&prms->q, 1.25);
+		prms->k *= 1.25;
 	else if (keycode == 78)
-		k_qtrn(&prms->q, 0.8);
+		prms->k *= 0.8;
 	ft_draw(prms);
+	return (0);
+}
+
+int		ft_alt_mouse_press(int button, int x, int y, t_params *prms)
+{
 	return (0);
 }
 
 int		ft_mouse_press(int button, int x, int y, t_params *prms)
 {
-	if (prms->xturn)
+	if (prms->alt)
+		ft_alt_mouse_press(button, x, y, prms);
+	else if (prms->xturn)
 	{
 		if (button == 5)
 			prms->q = mul_qtrn(prms->q, *g_qx);
@@ -205,9 +212,9 @@ int		ft_mouse_press(int button, int x, int y, t_params *prms)
 			prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qz));
 	}
 	else if (button == 4)
-		k_qtrn(&prms->q, 1.25);
+		prms->k *= 1.25;
 	else if (button == 5)
-		k_qtrn(&prms->q, 0.8);
+		prms->k *= 0.8;
 	ft_draw(prms);
 	return (0);
 }
@@ -293,6 +300,63 @@ t_draw	*new_draw(t_params *prms, t_vector v)
 	return (tmp);
 }
 
+void	ft_put_cube(t_params *prms, t_vector bufv, t_vector min, t_gradient gr, char c)
+{
+	gr.from = 0x00707070;
+	gr.to = 0x00707070;
+	if (c)
+	{
+		gr.from = 0x00ffffff;
+		gr.to = 0x00ffffff;
+	}
+	min.z -= 0.5;
+	min.y -= 0.5;
+	bufv = min;
+	min.x += 0.5;
+	bufv.x -= 0.5;
+	ft_put_line(prms, bufv, min, gr);
+	bufv = min;
+	min.z += 1;
+	ft_put_line(prms, bufv, min, gr);
+	min.z -= 1;
+	bufv = min;
+	min.y += 1;
+	ft_put_line(prms, bufv, min, gr);
+	bufv = min;
+	min.z += 1;
+	ft_put_line(prms, bufv, min, gr);
+	min.z -= 1;
+	bufv = min;
+	min.x -=1;
+	ft_put_line(prms, bufv, min, gr);
+	bufv = min;
+	min.z += 1;
+	ft_put_line(prms, bufv, min, gr);
+	min.z -= 1;
+	bufv = min;
+	min.y -= 1;
+	ft_put_line(prms, bufv, min, gr);
+	bufv = min;
+	min.z += 1;
+	ft_put_line(prms, bufv, min, gr);
+	min.z -= 1;
+	min.z += 1;
+	min.x += 0.5;
+	bufv = min;
+	min.x += 0.5;
+	bufv.x -= 0.5;
+	ft_put_line(prms, bufv, min, gr);
+	bufv = min;
+	min.y += 1;
+	ft_put_line(prms, bufv, min, gr);
+	bufv = min;
+	min.x -=1;
+	ft_put_line(prms, bufv, min, gr);
+	bufv = min;
+	min.y -= 1;
+	ft_put_line(prms, bufv, min, gr);
+}
+
 void	ft_draw(t_params *prms)
 {
 	int			color;
@@ -305,13 +369,62 @@ void	ft_draw(t_params *prms)
 	t_queue		*queue;
 	t_draw		*buf;
 	t_gradient	gr;
+	t_vector	bufv;
+	t_vector	min;
 
-	g_shift = (int)sqrt(prms->x * prms->y) / 200 * mod_qtrn(prms->q);
 	mlx_clear_window(prms->mlx, prms->win);
+	bufv.x = 0;
+	bufv.y = 0;
+	bufv.z = 0;
+	bufv = add_vector(bufv, prms->start);
+//	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
+	bufv = turn_vector(bufv, prms->q, 1);
+//	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
+	//mlx_string_put(prms->mlx, prms->win, (int)bufv.x + prms->shift.x, (int)bufv.y + prms->shift.y, 0x00ffffff, ft_itoa((int)(bufv.z * 100)));
+	//ft_put_cube(prms, min, bufv, gr, 0);
+	min = bufv;
+	bufv.x = prms->n - 1;
+	bufv.y = 0;
+	bufv.z = 0;
+	bufv = add_vector(bufv, prms->start);
+//	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
+	bufv = turn_vector(bufv, prms->q, 1);
+//	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
+	//ft_put_cube(prms, min, bufv, gr, 0);
+	if (bufv.z < min.z)
+		min = bufv;
+	bufv.x = 0;
+	bufv.y = prms->m - 1;
+	bufv.z = 0;
+	bufv = add_vector(bufv, prms->start);
+//	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
+	bufv = turn_vector(bufv, prms->q, 1);
+//	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
+	//ft_put_cube(prms, min, bufv, gr, 0);
+	if (bufv.z < min.z)
+		min = bufv;
+	bufv.x = prms->n - 1;
+	bufv.y = prms->m - 1;
+	bufv.z = 0;
+	bufv = add_vector(bufv, prms->start);
+//	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
+	bufv = turn_vector(bufv, prms->q, 1);
+//	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
+	//ft_put_cube(prms, min, bufv, gr, 0);
+	if (bufv.z < min.z)
+		min = bufv;
+	//printf("res:\t%f, %f, %f ===>", min.x, min.y, min.z);
+	min = turn_vector(min, prms->q, 0);
+	//ft_put_cube(prms, bufv, min, gr, 1);
+	//printf("%.0f, %.0f, %.0f\n\n", min.x, min.y, min.z);
+	//printf("w = %f, v = (%f, %f, %f)\n", prms->q.w / 4, prms->q.v.x / 4, prms->q.v.y / 4, prms->q.v.z / 4);
+	//printf("%f, %f, %f\n", prms->start.x, prms->start.y, prms->start.z);
+	g_shift = (int)sqrt(prms->x * prms->y) / 300 * prms->k;
 	ft_put_axis(prms);
-	from.x = 0.0;
-	from.y = 0.0;
-	from.z = prms->map[0][0][0];
+//	from.x = 0.0;
+//	from.y = 0.0;
+//	from.z = prms->map[0][0][0];
+	from = add_vector(min, rev_vector(prms->start));
 	queue = ft_queue_new();
 	buf = new_draw(prms, from);
 	ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
@@ -322,7 +435,7 @@ void	ft_draw(t_params *prms)
 		from = tmp->v;
 		gr.from = tmp->color;
 		//printf("\nfrom: %f, %f, %f\n", from.x, from.y, from.z);
-		tmp->v.x += 1;
+		tmp->v.x -= FT_SIGN(min.x);
 		if (tmp->v.x < prms->n)
 		{
 			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
@@ -333,8 +446,8 @@ void	ft_draw(t_params *prms)
 			buf = new_draw(prms, tmp->v);
 			ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 		}
-		tmp->v.x -= 1;
-		tmp->v.y += 1;
+		tmp->v.x += FT_SIGN(min.x);
+		tmp->v.y -= FT_SIGN(min.y);
 		if (tmp->v.y < prms->m)
 		{
 			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
@@ -348,7 +461,7 @@ void	ft_draw(t_params *prms)
 				ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 			}
 		}
-		tmp->v.y -= 1;
+		tmp->v.y += FT_SIGN(min.y);
 		free(tmp);
 		free(elem);
 	}
@@ -365,9 +478,14 @@ void	fill_map_elem(int *elem, char **str)
 	while (ft_isdigit(**str))
 		elem[0] = elem[0] * 10 + *(*str)++ - '0';
 	elem[0] *= sign;
+	while (ft_isspace(**str))
+		(*str)++;
 	if (*(*str) == ',')
 	{
-		(*str) += 3;
+		(*str)++;
+		while (ft_isspace(**str))
+			(*str)++;
+		(*str) += 2;
 		while (ft_isdigit(*(++*str)) || \
 				(ft_tolower(**str) >= 'a' && ft_tolower(**str) <= 'f'))
 		{
@@ -442,6 +560,9 @@ void	ft_read(char *file, t_params *prms)
 	close(fd);
 	prms->map = map;
 	prms->m = len;
+	prms->start.x = -(double)(prms->n - 1) / 2;
+	prms->start.y = -(double)(prms->m - 1) / 2;
+	prms->start.z = -(double)(min + max) / 2;
 	if (b == -1)
 		ft_exit(ERROR, prms);
 	j = len;
