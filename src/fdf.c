@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 05:42:20 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 06:27:50 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,9 +82,8 @@ void	ft_initialize(t_params *prms)
 	prms->shift.y = prms->y / 2;
 	prms->q.w = 1;
 	ft_bzero(&prms->q.v, sizeof(prms->q.v));
+	prms->k = FT_MIN(prms->x / prms->n, prms->y / prms->m) * 0.8;
 	g_shift = (int)sqrt(prms->x * prms->y) / 40 * prms->k;
-	prms->k = 20;
-	prms->dist = -60;
 }
 
 int		ft_alt_key_press(int keycode, t_params *prms)
@@ -370,8 +369,8 @@ void	ft_draw(t_params *prms)
 //	ft_put_axis(prms);
 //	from.x = 0.0;
 //	from.y = 0.0;
-//	from.z = prms->map[0][0][0];
 	from = min;
+	from.z = prms->map[(int)from.x][(int)from.y][0];
 	queue = ft_queue_new();
 	buf = new_draw(prms, from);
 	ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
@@ -382,13 +381,17 @@ void	ft_draw(t_params *prms)
 		from = tmp->v;
 		gr.from = tmp->color;
 		//printf("\nfrom: %f, %f, %f\n", from.x, from.y, from.z);
+		//printf("x_step = %d, y_step = %d\n", FT_SIGN(-min.x), FT_SIGN(-min.y));
 		tmp->v.x += FT_SIGN(-min.x);
 		if (tmp->v.x < prms->n && tmp->v.x >= 0)
 		{
 			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
 			gr.to = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
+			//printf("%X --> %X\n", gr.from, gr.to);
 			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
 			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
+			//printf("%d to %d\n", gr.from, gr.to);
+			//printf("%f, %f, %f to %f, %f, %f", from.x, from.y, from.z, tmp->v.x, tmp->v.y, tmp->v.z);
 			ft_put_line(prms, from, tmp->v, gr);
 			buf = new_draw(prms, tmp->v);
 			ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
@@ -532,6 +535,7 @@ void	ft_read(char *file, t_params *prms)
 				map[j][i][1] &= 0x00ffffff;
 		}
 	}
+	prms->dist = -max * 5 - 10;
 }
 
 int		main(int ac, char **av)
