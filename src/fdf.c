@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 05:13:26 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 05:26:59 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void	ft_initialize(t_params *prms)
 	prms->shift.y = prms->y / 2;
 	prms->q.w = 1;
 	ft_bzero(&prms->q.v, sizeof(prms->q.v));
-	g_shift = (int)sqrt(prms->x * prms->y) / 40;
+	g_shift = (int)sqrt(prms->x * prms->y) / 40 * prms->k;
 	prms->k = 4;
 }
 
@@ -300,63 +300,6 @@ t_draw	*new_draw(t_params *prms, t_vector v)
 	return (tmp);
 }
 
-void	ft_put_cube(t_params *prms, t_vector bufv, t_vector min, t_gradient gr, char c)
-{
-	gr.from = 0x00707070;
-	gr.to = 0x00707070;
-	if (c)
-	{
-		gr.from = 0x00ffffff;
-		gr.to = 0x00ffffff;
-	}
-	min.z -= 0.5;
-	min.y -= 0.5;
-	bufv = min;
-	min.x += 0.5;
-	bufv.x -= 0.5;
-	ft_put_line(prms, bufv, min, gr);
-	bufv = min;
-	min.z += 1;
-	ft_put_line(prms, bufv, min, gr);
-	min.z -= 1;
-	bufv = min;
-	min.y += 1;
-	ft_put_line(prms, bufv, min, gr);
-	bufv = min;
-	min.z += 1;
-	ft_put_line(prms, bufv, min, gr);
-	min.z -= 1;
-	bufv = min;
-	min.x -=1;
-	ft_put_line(prms, bufv, min, gr);
-	bufv = min;
-	min.z += 1;
-	ft_put_line(prms, bufv, min, gr);
-	min.z -= 1;
-	bufv = min;
-	min.y -= 1;
-	ft_put_line(prms, bufv, min, gr);
-	bufv = min;
-	min.z += 1;
-	ft_put_line(prms, bufv, min, gr);
-	min.z -= 1;
-	min.z += 1;
-	min.x += 0.5;
-	bufv = min;
-	min.x += 0.5;
-	bufv.x -= 0.5;
-	ft_put_line(prms, bufv, min, gr);
-	bufv = min;
-	min.y += 1;
-	ft_put_line(prms, bufv, min, gr);
-	bufv = min;
-	min.x -=1;
-	ft_put_line(prms, bufv, min, gr);
-	bufv = min;
-	min.y -= 1;
-	ft_put_line(prms, bufv, min, gr);
-}
-
 void	ft_draw(t_params *prms)
 {
 	int			color;
@@ -423,7 +366,7 @@ void	ft_draw(t_params *prms)
 	//printf("w = %f, v = (%f, %f, %f)\n", prms->q.w / 4, prms->q.v.x / 4, prms->q.v.y / 4, prms->q.v.z / 4);
 	//printf("%f, %f, %f\n", prms->start.x, prms->start.y, prms->start.z);
 	g_shift = (int)sqrt(prms->x * prms->y) / 300;
-	ft_put_axis(prms);
+//	ft_put_axis(prms);
 //	from.x = 0.0;
 //	from.y = 0.0;
 //	from.z = prms->map[0][0][0];
@@ -563,25 +506,25 @@ void	ft_read(char *file, t_params *prms)
 	close(fd);
 	prms->map = map;
 	prms->m = len;
+	max -= min;
 	prms->start.x = -(double)(prms->n - 1) / 2;
 	prms->start.y = -(double)(prms->m - 1) / 2;
-	prms->start.z = -(double)(min + max) / 2;
+	prms->start.z = -(double)(max) / 2;
 	if (b == -1)
 		ft_exit(ERROR, prms);
-//	max -= min;
 	j = len;
 	while (j-- > 0)
 	{
 		i = k;
 		while (i-- > 0)
 		{
-//			map[j][i][0] -= min;
+			map[j][i][0] -= min;
 			if (!map[j][i][1])
 			{
-				if (min == max)
+				if (!max)
 					bk = 0.5;
 				else
-					bk = (double)(map[j][i][0] - min) / (double)(max - min);
+					bk = (double)map[j][i][0] / (double)max;
 				map[j][i][1] = ((int)round(0xff * (1 - bk)) << 16) | (int)round(0xff * bk);
 			}
 			else
