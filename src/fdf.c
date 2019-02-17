@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 05:26:59 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 05:42:20 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,8 @@ void	ft_initialize(t_params *prms)
 	prms->q.w = 1;
 	ft_bzero(&prms->q.v, sizeof(prms->q.v));
 	g_shift = (int)sqrt(prms->x * prms->y) / 40 * prms->k;
-	prms->k = 4;
+	prms->k = 20;
+	prms->dist = -60;
 }
 
 int		ft_alt_key_press(int keycode, t_params *prms)
