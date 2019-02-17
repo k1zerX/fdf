@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 06:27:50 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/17 09:08:18 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 t_qtrn			*g_qx = NULL;
 t_qtrn			*g_qy = NULL;
 t_qtrn			*g_qz = NULL;
-int				g_shift = 0;
+double			g_shift = 0;
 
 void	ft_draw(t_params *prms);
 
@@ -27,12 +27,12 @@ void	ft_exit(int status, t_params *prms)
 		write(1, "usage:\n\t./fdf [file_name]\n\t./fdf [file_name] [size_x > 0] [size_y > 0]\n", 71);
 	else if (status == CLOSE || status == ERROR || status == READ_ERROR)
 	{
-		while (prms->m-- > 0)
+		while (prms->y-- > 0)
 		{
-			i = prms->n;
+			i = prms->x;
 			while (i-- > 0)
-				free(prms->map[prms->m][i]);
-			free(prms->map[prms->m]);
+				free(prms->map[prms->y][i]);
+			free(prms->map[prms->y]);
 		}
 		free(prms->map);
 		free(g_qx);
@@ -61,6 +61,7 @@ void	ft_initialize(t_params *prms)
 	axis.y = 0;
 	axis.z = 0;
 	*g_qx = get_qtrn(axis, ANGLE);
+	prms->q = get_qtrn(axis, M_PI * 2 / 3);
 	if (!(g_qy = malloc(sizeof(*g_qy))))
 		ft_exit(ERROR, prms);
 	axis.x = 0;
@@ -72,18 +73,15 @@ void	ft_initialize(t_params *prms)
 	axis.x = 0;
 	axis.y = 0;
 	axis.z = 1;
+	prms->q = mul_qtrn(prms->q, get_qtrn(axis, M_PI * 2 / 3));
 	*g_qz = get_qtrn(axis, ANGLE);
-	if (!prms->x || !prms->y)
+	if (!prms->n || !prms->m)
 	{
-		prms->x = 1000;
-		prms->y = 1000;
+		prms->n = 1000;
+		prms->m = 1000;
 	}
-	prms->shift.x = prms->x / 2;
-	prms->shift.y = prms->y / 2;
-	prms->q.w = 1;
-	ft_bzero(&prms->q.v, sizeof(prms->q.v));
-	prms->k = FT_MIN(prms->x / prms->n, prms->y / prms->m) * 0.8;
-	g_shift = (int)sqrt(prms->x * prms->y) / 40 * prms->k;
+	ft_bzero(&prms->shift, sizeof(prms->shift));
+	prms->k = FT_MIN(prms->n, prms->m) / FT_MAX(prms->x, FT_MAX(prms->x, prms->z)) * 0.6; /* vlozhenniy ternarniy operator NEED TO FIX*/
 }
 
 int		ft_alt_key_press(int keycode, t_params *prms)
@@ -144,13 +142,17 @@ int		ft_key_press(int keycode, t_params *prms)
 	else if (keycode == 259)
 		prms->alt = 1;
 	else if (keycode == 123)
-		prms->shift.x -= g_shift;
-	else if (keycode == 124)
 		prms->shift.x += g_shift;
+	else if (keycode == 124)
+		prms->shift.x -= g_shift;
 	else if (keycode == 125)
-		prms->shift.y += g_shift;
-	else if (keycode == 126)
 		prms->shift.y -= g_shift;
+	else if (keycode == 126)
+		prms->shift.y += g_shift;
+	else if (keycode == 69)
+		prms->shift.z += 5;
+	else if (keycode == 78)
+		prms->shift.z -= 5;
 	else if (keycode == 7)
 		prms->xturn = 1;
 	else if (keycode == 16)
@@ -173,10 +175,10 @@ int		ft_key_release(int keycode, t_params *prms)
 		return (0);
 	else if (keycode == 259)
 		prms->alt = 0;
-	else if (keycode == 69)
-		prms->k *= 1.25;
-	else if (keycode == 78)
-		prms->k *= 0.8;
+//	else if (keycode == 69)
+//		prms->k *= 1.25;
+//	else if (keycode == 78)
+//		prms->k *= 0.8;
 	ft_draw(prms);
 	return (0);
 }
@@ -219,77 +221,6 @@ int		ft_mouse_press(int button, int x, int y, t_params *prms)
 	return (0);
 }
 
-void	ft_put_axis(t_params *prms)
-{
-	t_vector	x;
-	t_vector	y;
-	t_vector	z;
-	t_vector	start;
-	double		alpha;
-	double		step;
-	t_vector	v;
-	t_gradient	gr;
-
-	step = 0.1;
-	ft_bzero(&x, sizeof(t_vector));
-	ft_bzero(&y, sizeof(t_vector));
-	ft_bzero(&z, sizeof(t_vector));
-	start.x = 0;
-	start.y = 0;
-	start.z = 0;
-	x.x = 20;
-	y.y = 20;
-	z.z = 20;
-	x = add_vector(x, start);
-	y = add_vector(y, start);
-	z = add_vector(z, start);
-	gr.from = 0x00ff0000;
-	gr.to = 0x00ff0000;
-	ft_put_line(prms, start, x, gr);
-	alpha = 0;
-	while (alpha < M_PI * 2)
-	{
-		v.x = -3;
-		v.z = sin(alpha);
-		v.y = cos(alpha);
-		k_vector(&v, 0.5);
-		v = add_vector(v, x);
-		ft_put_line(prms, x, v, gr);
-		alpha += step;
-	}
-	gr.from = 0x0000ff00;
-	gr.to = 0x0000ff00;
-	ft_put_line(prms, start, y, gr);
-	alpha = 0;
-	while (alpha < M_PI * 2)
-	{
-		v.x = sin(alpha);
-		v.y = -3;
-		v.z = cos(alpha);
-		k_vector(&v, 0.5);
-		v = add_vector(v, y);
-		ft_put_line(prms, y, v, gr);
-		alpha += step;
-	}
-	gr.from = 0x000000ff;
-	gr.to = 0x000000ff;
-	ft_put_line(prms, start, z, gr);
-	alpha = 0;
-	while (alpha < M_PI * 2)
-	{
-		v.x = sin(alpha);
-		v.y = cos(alpha);
-		v.z = -3;
-		k_vector(&v, 0.5);
-		v = add_vector(v, z);
-		ft_put_line(prms, z, v, gr);
-		alpha += step;
-	}
-	gr.from = 0x00707070;
-	gr.to = 0x00707070;
-	ft_put_line(prms, start, start, gr);
-}
-
 t_draw	*new_draw(t_params *prms, t_vector v)
 {
 	t_draw	*tmp;
@@ -316,6 +247,7 @@ void	ft_draw(t_params *prms)
 	t_vector	min;
 
 	mlx_clear_window(prms->mlx, prms->win);
+	g_shift = 25 / prms->k;
 	bufv.x = 0;
 	bufv.y = 0;
 	bufv.z = 0;
@@ -326,7 +258,7 @@ void	ft_draw(t_params *prms)
 	//mlx_string_put(prms->mlx, prms->win, (int)bufv.x + prms->shift.x, (int)bufv.y + prms->shift.y, 0x00ffffff, ft_itoa((int)(bufv.z * 100)));
 	//ft_put_cube(prms, min, bufv, gr, 0);
 	min = bufv;
-	bufv.x = prms->n - 1;
+	bufv.x = prms->x - 1;
 	bufv.y = 0;
 	bufv.z = 0;
 	bufv = add_vector(bufv, prms->start);
@@ -337,7 +269,7 @@ void	ft_draw(t_params *prms)
 	if (bufv.z < min.z)
 		min = bufv;
 	bufv.x = 0;
-	bufv.y = prms->m - 1;
+	bufv.y = prms->y - 1;
 	bufv.z = 0;
 	bufv = add_vector(bufv, prms->start);
 //	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
@@ -346,8 +278,8 @@ void	ft_draw(t_params *prms)
 	//ft_put_cube(prms, min, bufv, gr, 0);
 	if (bufv.z < min.z)
 		min = bufv;
-	bufv.x = prms->n - 1;
-	bufv.y = prms->m - 1;
+	bufv.x = prms->x - 1;
+	bufv.y = prms->y - 1;
 	bufv.z = 0;
 	bufv = add_vector(bufv, prms->start);
 //	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
@@ -365,12 +297,13 @@ void	ft_draw(t_params *prms)
 	//printf("%.0f, %.0f, %.0f\n\n", min.x, min.y, min.z);
 	//printf("w = %f, v = (%f, %f, %f)\n", prms->q.w / 4, prms->q.v.x / 4, prms->q.v.y / 4, prms->q.v.z / 4);
 	//printf("%f, %f, %f\n", prms->start.x, prms->start.y, prms->start.z);
-	g_shift = (int)sqrt(prms->x * prms->y) / 300;
 //	ft_put_axis(prms);
 //	from.x = 0.0;
 //	from.y = 0.0;
 	from = min;
-	from.z = prms->map[(int)from.x][(int)from.y][0];
+//	printf("n = %d, m = %d ||| %d, %d, %f\n", prms->n, prms->m, (int)from.x, (int)from.y, from.z);
+	from.z = prms->map[(int)from.y][(int)from.x][0];
+//	printf("OKOKOKOK\n");
 	queue = ft_queue_new();
 	buf = new_draw(prms, from);
 	ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
@@ -383,7 +316,7 @@ void	ft_draw(t_params *prms)
 		//printf("\nfrom: %f, %f, %f\n", from.x, from.y, from.z);
 		//printf("x_step = %d, y_step = %d\n", FT_SIGN(-min.x), FT_SIGN(-min.y));
 		tmp->v.x += FT_SIGN(-min.x);
-		if (tmp->v.x < prms->n && tmp->v.x >= 0)
+		if (tmp->v.x < prms->x && tmp->v.x >= 0)
 		{
 			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
 			gr.to = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
@@ -398,7 +331,7 @@ void	ft_draw(t_params *prms)
 		}
 		tmp->v.x -= FT_SIGN(-min.x);
 		tmp->v.y += FT_SIGN(-min.y);
-		if (tmp->v.y < prms->m && tmp->v.y >= 0)
+		if (tmp->v.y < prms->y && tmp->v.y >= 0)
 		{
 			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
 			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
@@ -494,26 +427,27 @@ void	ft_read(char *file, t_params *prms)
 		}
 		len++;
 		free(buf);
-		if (!prms->n)
-			prms->n = k;
-		else if (prms->n != k)
+		if (!prms->x)
+			prms->x = k;
+		else if (prms->x != k)
 		{
 			prms->map = map;
-			prms->m = len - 1;
+			prms->y = len - 1;
 			close(fd);
 			while (k-- > 0)
-				free(map[prms->m][k]);
-			free(map[prms->m]);
+				free(map[prms->y][k]);
+			free(map[prms->y]);
 			ft_exit(READ_ERROR, prms);
 		}
 	}
 	close(fd);
 	prms->map = map;
-	prms->m = len;
+	prms->y = len;
 	max -= min;
-	prms->start.x = -(double)(prms->n - 1) / 2;
-	prms->start.y = -(double)(prms->m - 1) / 2;
-	prms->start.z = -(double)(max) / 2;
+	prms->z = max;
+	prms->start.x = -(double)(prms->x - 1) / 2;
+	prms->start.y = -(double)(prms->y - 1) / 2;
+	prms->start.z = -(double)max / 2;
 	if (b == -1)
 		ft_exit(ERROR, prms);
 	j = len;
@@ -565,7 +499,7 @@ int		main(int ac, char **av)
 //		}
 	ft_initialize(&prms);
 	prms.mlx = mlx_init();
-	prms.win = mlx_new_window(prms.mlx, prms.x, prms.y, "mlx 42");
+	prms.win = mlx_new_window(prms.mlx, prms.n, prms.m, "mlx 42");
 	ft_draw(&prms);
 	mlx_hook(prms.win, 2, 0, &ft_key_press, &prms);
 	mlx_hook(prms.win, 3, 0, &ft_key_release, &prms);
