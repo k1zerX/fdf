@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:06:59 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 09:01:52 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/18 21:36:10 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,36 +68,36 @@ void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 
 void		ft_put_line(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 {
-	if (prms->dist > 0)
+	if (prms->d > 0)
 		return ;
 	from = turn_vector(add_vector(from, prms->start), prms->q, 1);
 	from = add_vector(from, prms->shift);
-	if (from.z + prms->dist > 0)
+	if (from.z + prms->d > 0)
 		return ;
-	else if (from.z + prms->dist == 0)
+	else if (from.z + prms->d == 0)
 	{
-		from.x = from.x * prms->dist / (from.z + prms->dist - 1);
-		from.y = from.y * prms->dist / (from.z + prms->dist - 1);
+		from.x = from.x * prms->d / (from.z + prms->d - 1);
+		from.y = from.y * prms->d / (from.z + prms->d - 1);
 	}
 	else
 	{
-		from.x = from.x * prms->dist / (from.z + prms->dist);
-		from.y = from.y * prms->dist / (from.z + prms->dist);
+		from.x = from.x * prms->d / (from.z + prms->d);
+		from.y = from.y * prms->d / (from.z + prms->d);
 	}
-//	printf("%f, %d\n", prms->shift.z, prms->dist);
+//	printf("%f, %d\n", prms->shift.z, prms->d);
 	to = turn_vector(add_vector(to, prms->start), prms->q, 1);
 	to = add_vector(to, prms->shift);
-	if (to.z + prms->dist > 0)
+	if (to.z + prms->d > 0)
 		return ;
-	else if (to.z + prms->dist == 0)
+	else if (to.z + prms->d == 0)
 	{
-		to.x = to.x * prms->dist / (to.z + prms->dist - 1);
-		to.y = to.y * prms->dist / (to.z + prms->dist - 1);
+		to.x = to.x * prms->d / (from.z + prms->d - 1);
+		to.y = to.y * prms->d / (from.z + prms->d - 1);
 	}
 	else
 	{
-		to.x = to.x * prms->dist / (to.z + prms->dist);
-		to.y = to.y * prms->dist / (to.z + prms->dist);
+		to.x = to.x * prms->d / (to.z + prms->d);
+		to.y = to.y * prms->d / (to.z + prms->d);
 	}
 	//printf("%f, %f, %f to %f, %f, %f\n", from.x, from.y, from.z, to.x, to.y, to.z);
 	k_vector(&from, prms->k);

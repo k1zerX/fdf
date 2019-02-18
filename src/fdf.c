@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 09:19:33 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/18 21:43:17 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,39 +49,6 @@ int		ft_close(t_params *prms)
 {
 	ft_exit(CLOSE, prms);
 	return (0);
-}
-
-void	ft_initialize(t_params *prms)
-{
-	t_vector		axis;
-
-	if (!(g_qx = malloc(sizeof(*g_qx))))
-		ft_exit(ERROR, prms);
-	axis.x = 1;
-	axis.y = 0;
-	axis.z = 0;
-	*g_qx = get_qtrn(axis, ANGLE);
-	prms->q = get_qtrn(axis, M_PI * 2 / 3);
-	if (!(g_qy = malloc(sizeof(*g_qy))))
-		ft_exit(ERROR, prms);
-	axis.x = 0;
-	axis.y = 1;
-	axis.z = 0;
-	*g_qy = get_qtrn(axis, ANGLE);
-	if (!(g_qz = malloc(sizeof(*g_qz))))
-		ft_exit(ERROR, prms);
-	axis.x = 0;
-	axis.y = 0;
-	axis.z = 1;
-	prms->q = mul_qtrn(prms->q, get_qtrn(axis, M_PI * 2 / 3));
-	*g_qz = get_qtrn(axis, ANGLE);
-	if (!prms->n || !prms->m)
-	{
-		prms->n = 1000;
-		prms->m = 1000;
-	}
-	ft_bzero(&prms->shift, sizeof(prms->shift));
-	prms->k = FT_MIN(prms->n, prms->m) / FT_MAX(prms->x, FT_MAX(prms->x, prms->z)) * 0.6; /* vlozhenniy ternarniy operator NEED TO FIX*/
 }
 
 int		ft_alt_key_press(int keycode, t_params *prms)
@@ -150,15 +117,22 @@ int		ft_key_press(int keycode, t_params *prms)
 	else if (keycode == 126)
 		prms->shift.y += g_shift;
 	else if (keycode == 69)
-		prms->shift.z += 5;
+	{
+		prms->d *= 1.25;
+		prms->shift.z *= 1.25;
+	}
 	else if (keycode == 78)
-		prms->shift.z -= 5;
+	{
+		prms->d *= 0.8;
+		prms->shift.z *= 0.8;
+	}
 	else if (keycode == 7)
 		prms->xturn = 1;
 	else if (keycode == 16)
 		prms->yturn = 1;
 	else if (keycode == 6)
 		prms->zturn = 1;
+	printf("d = %f\n", prms->d);
 	ft_draw(prms);
 	return (0);
 }
@@ -175,24 +149,13 @@ int		ft_key_release(int keycode, t_params *prms)
 		return (0);
 	else if (keycode == 259)
 		prms->alt = 0;
-//	else if (keycode == 69)
-//		prms->k *= 1.25;
-//	else if (keycode == 78)
-//		prms->k *= 0.8;
 	ft_draw(prms);
-	return (0);
-}
-
-int		ft_alt_mouse_press(int button, int x, int y, t_params *prms)
-{
 	return (0);
 }
 
 int		ft_mouse_press(int button, int x, int y, t_params *prms)
 {
-	if (prms->alt)
-		ft_alt_mouse_press(button, x, y, prms);
-	else if (prms->xturn)
+	if (prms->xturn)
 	{
 		if (button == 5)
 			prms->q = mul_qtrn(prms->q, *g_qx);
@@ -213,10 +176,44 @@ int		ft_mouse_press(int button, int x, int y, t_params *prms)
 		else if (button == 4)
 			prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qz));
 	}
+	else if (button == 1)
+	{
+		prms->click = 1;
+		prms->click_p.x = x;
+		prms->click_p.y = y;
+	}
 	else if (button == 4)
-		prms->k *= 1.25;
+		prms->shift.z += 10;
 	else if (button == 5)
-		prms->k *= 0.8;
+		prms->shift.z -= 10;
+	printf("z = %f\n", prms->shift.z);
+	ft_draw(prms);
+	return (0);
+}
+
+int		ft_mouse_release(int button, int x, int y, t_params *prms)
+{
+	if (button == 1)
+		prms->click = 0;
+	return (0);
+}
+
+int		ft_alt_mouse_move(int x, int y, t_params *prms)
+{
+	return (0);
+}
+
+int		ft_mouse_move(int x, int y, t_params *prms)
+{
+	if (prms->alt)
+		ft_alt_mouse_move(x, y, prms);
+	else if (prms->click)
+	{
+		prms->shift.x += (double)(x - prms->click_p.x) / prms->k;
+		prms->shift.y += (double)(y - prms->click_p.y) / prms->k;
+		prms->click_p.x = x;
+		prms->click_p.y = y;
+	}
 	ft_draw(prms);
 	return (0);
 }
@@ -225,7 +222,8 @@ t_draw	*new_draw(t_params *prms, t_vector v)
 {
 	t_draw	*tmp;
 
-	tmp = malloc(sizeof(*tmp));
+	if (!(tmp = malloc(sizeof(*tmp))))
+		return (NULL);
 	tmp->v = v;
 	tmp->color = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
 	return (tmp);
@@ -290,9 +288,9 @@ void	ft_draw(t_params *prms)
 		min = bufv;
 	//printf("res:\t%f, %f, %f ===>", min.x, min.y, min.z);
 	min = add_vector(turn_vector(min, prms->q, 0), rev_vector(prms->start));
-	min.x = (int)min.x;
+/*	min.x = (int)min.x;
 	min.y = (int)min.y;
-	min.z = (int)min.z;
+	min.z = (int)min.z;*/
 	//ft_put_cube(prms, bufv, min, gr, 1);
 	//printf("%.0f, %.0f, %.0f\n\n", min.x, min.y, min.z);
 	//printf("w = %f, v = (%f, %f, %f)\n", prms->q.w / 4, prms->q.v.x / 4, prms->q.v.y / 4, prms->q.v.z / 4);
@@ -309,7 +307,7 @@ void	ft_draw(t_params *prms)
 	ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
 	while (queue->len)
 	{
-		printf("not to draw lines which are outside the window's borders, fix angles in qtrns & manage correctly hidden surfaces\n");
+		//printf("not to draw lines which are outside the window's borders, fix angles in qtrns & manage correctly hidden surfaces\n");
 		elem = ft_queue_pop(queue);
 		tmp = (t_draw *)elem->content;
 		from = tmp->v;
@@ -339,7 +337,7 @@ void	ft_draw(t_params *prms)
 			gr.to = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
 			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
 			ft_put_line(prms, from, tmp->v, gr);
-			if (tmp->v.x == min.x)
+			if (tmp->v.x == (int)min.x)
 			{
 				buf = new_draw(prms, tmp->v);
 				ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
@@ -446,9 +444,6 @@ void	ft_read(char *file, t_params *prms)
 	prms->y = len;
 	max -= min;
 	prms->z = max;
-	prms->start.x = -(double)(prms->x - 1) / 2;
-	prms->start.y = -(double)(prms->y - 1) / 2;
-	prms->start.z = -(double)max / 2;
 	if (b == -1)
 		ft_exit(ERROR, prms);
 	j = len;
@@ -470,11 +465,59 @@ void	ft_read(char *file, t_params *prms)
 				map[j][i][1] &= 0x00ffffff;
 		}
 	}
-	prms->dist = -max * 5 - 10;
+}
+
+void	ft_initialize(t_params *prms)
+{
+	t_vector		axis;
+
+	if (!(g_qx = malloc(sizeof(*g_qx))))
+		ft_exit(ERROR, prms);
+	axis.x = 1;
+	axis.y = 0;
+	axis.z = 0;
+	*g_qx = get_qtrn(axis, ANGLE);
+	prms->q = get_qtrn(axis, M_PI * 2 / 3);
+	if (!(g_qy = malloc(sizeof(*g_qy))))
+		ft_exit(ERROR, prms);
+	axis.x = 0;
+	axis.y = 1;
+	axis.z = 0;
+	*g_qy = get_qtrn(axis, ANGLE);
+	if (!(g_qz = malloc(sizeof(*g_qz))))
+		ft_exit(ERROR, prms);
+	axis.x = 0;
+	axis.y = 0;
+	axis.z = 1;
+	prms->q = mul_qtrn(prms->q, get_qtrn(axis, M_PI * 2 / 3));
+	*g_qz = get_qtrn(axis, ANGLE);
+	if (!prms->n || !prms->m)
+	{
+		prms->n = 1000;
+		prms->m = 1000;
+	}
+	prms->k = FT_MIN(prms->n, prms->m) / FT_MAX(prms->x, FT_MAX(prms->x, prms->z)) * 0.6; /* vlozhenniy ternarniy operator NEED TO FIX*/
+	prms->start.x = -(double)(prms->x - 1) / 2;
+	prms->start.y = -(double)(prms->y - 1) / 2;
+	prms->start.z = -(double)prms->z / 2;
+	prms->d = -prms->z * 5 - 10;
 }
 /*
 нужно учитывать перспективу при расчете точки с которой нужно начинать отрисовывать
 ищем самую отдаленную из четырех крайних точек от камеры
+пофиксить камеру и перспективу
+объединить отдаление по Z и глубину перспективы d
+заменить чем-нибудь их
+при изменении глубины не должно меняться положение камеры
+а оно меняется какого-то черта
+а при отдалении объекта должно меняться положение камеры
+а оно не меняется)))0))0))
+а просто увеличивается картинка меняя искажение перспективы
+проявляется это при просмотре чуть выше верхней грани
+увеличивая глубину верхняя плоскость становится невидимой как будто бы мы опускаем камеру но мы этого не делаем
+по сути нужно вместо отдаления объекта приближать камеру
+поработать над формулой камеры
+сломал рисовку при повороте фигуры но ее все равно нужно было менять
 */
 int		main(int ac, char **av)
 {
@@ -508,6 +551,8 @@ int		main(int ac, char **av)
 	mlx_hook(prms.win, 2, 0, &ft_key_press, &prms);
 	mlx_hook(prms.win, 3, 0, &ft_key_release, &prms);
 	mlx_hook(prms.win, 4, 0, &ft_mouse_press, &prms);
+	mlx_hook(prms.win, 5, 0, &ft_mouse_release, &prms);
+	mlx_hook(prms.win, 6, 0, &ft_mouse_move, &prms);
 	mlx_hook(prms.win, 17, 0, &ft_close, &prms);
 	mlx_loop(prms.mlx);
 	return (0);
