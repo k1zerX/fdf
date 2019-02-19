@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:06:59 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/18 21:36:10 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/19 22:05:50 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,40 +68,28 @@ void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 
 void		ft_put_line(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 {
-	if (prms->d > 0)
-		return ;
 	from = turn_vector(add_vector(from, prms->start), prms->q, 1);
 	from = add_vector(from, prms->shift);
-	if (from.z + prms->d > 0)
-		return ;
-	else if (from.z + prms->d == 0)
-	{
-		from.x = from.x * prms->d / (from.z + prms->d - 1);
-		from.y = from.y * prms->d / (from.z + prms->d - 1);
-	}
-	else
-	{
-		from.x = from.x * prms->d / (from.z + prms->d);
-		from.y = from.y * prms->d / (from.z + prms->d);
-	}
-//	printf("%f, %d\n", prms->shift.z, prms->d);
 	to = turn_vector(add_vector(to, prms->start), prms->q, 1);
 	to = add_vector(to, prms->shift);
-	if (to.z + prms->d > 0)
-		return ;
-	else if (to.z + prms->d == 0)
+	/*if (to.x < 0 || from.x > prms->n)
+		return ;*/
+	if (from.z >= -prms->d)
 	{
-		to.x = to.x * prms->d / (from.z + prms->d - 1);
-		to.y = to.y * prms->d / (from.z + prms->d - 1);
+		from.x -= (from.z - (-prms->d - 1)) * (to.x - from.x) / (to.z - from.z);
+		from.y -= (from.z - (-prms->d - 1)) * (to.y - from.y) / (to.y - from.z);
+		from.z -= (from.z - (-prms->d - 1));
 	}
-	else
+	if (to.z >= -prms->d)
 	{
-		to.x = to.x * prms->d / (to.z + prms->d);
-		to.y = to.y * prms->d / (to.z + prms->d);
+		to.x -= (to.z - (-prms->d - 1)) * (to.x - from.x) / (to.z - from.z);
+		to.y -= (to.z - (-prms->d - 1)) * (to.y - from.y) / (to.y - from.z);
+		to.z -= (to.z - (-prms->d - 1));
 	}
-	//printf("%f, %f, %f to %f, %f, %f\n", from.x, from.y, from.z, to.x, to.y, to.z);
-	k_vector(&from, prms->k);
-	k_vector(&to, prms->k);
+	from.x = from.x * prms->d / (from.z + prms->d);
+	from.y = from.y * prms->d / (from.z + prms->d);
+	to.x = to.x * prms->d / (to.z + prms->d);
+	to.y = to.y * prms->d / (to.z + prms->d);
 	if ((gr.inv = (fabs(to.y - from.y) > fabs(to.x - from.x))))
 	{
 		ft_swap(&from.x, &from.y, sizeof(from.x));
@@ -112,36 +100,38 @@ void		ft_put_line(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 		ft_swap(&from.x, &to.x, sizeof(from.x));
 		ft_swap(&from.y, &to.y, sizeof(from.y));
 		ft_swap(&gr.from, &gr.to, sizeof(gr.from));
-	}/*
-	if (from.x < 0)
-	{
-		from.y += (to.y - from.y) / (to.x - from.x) * (0 - from.x);
-		from.x = 0;
 	}
-	if (to.x > prms->x)
+	if (to.x > prms->n)
 	{
-		to.y -= (to.y - from.y) / (to.x - from.x) * (to.x - prms->x);
-		to.x = prms->x;
+		to.y -= (to.x - prms->n) * (to.y - from.y) / (to.x - from.x);
+		to.x -= (to.x - prms->n);
 	}
-	if (from.y < 0)
+	if (from.y > prms->m)
 	{
-		from.x += (to.x - from.x) / (to.y - from.y) * (0 - from.y);
-		from.y = 0;
+		from.x -= (from.y - prms->m) * (to.x - from.x) / (to.y - from.y);
+		from.y -= (from.y - prms->m);
 	}
 	if (to.y < 0)
 	{
-		to.x -= (to.x - from.x) / (to.y - from.y) * (0 - to.y);
-		to.y = 0;
+		to.x -= (to.y - 0) * (to.x - from.x) / (to.y - from.y);
+		to.y -= (to.y - 0);
 	}
-	if (from.y > prms->y)
+	if (from.x < 0)
 	{
-		from.x += (to.x - from.x) / (to.y - from.y) * (from.y - prms->y);
-		from.y = prms->y;
+		from.y -= (from.x - 0) * (to.y - from.y) / (to.x - from.x);
+		from.x -= (from.x - 0);
 	}
-	if (to.y > prms->y)
+	if (from.y < 0)
 	{
-		to.x -= (to.x - from.x) / (to.y - from.y) * (to.y - prms->y);
-		to.y = prms->y;
-	}*/
+		from.x -= (from.y - 0) * (to.x - from.x) / (to.y - from.y);
+		from.y -= (from.y - 0);
+	}
+	if (to.y > prms->m)
+	{
+		to.x -= (to.y - prms->m) * (to.x - from.x) / (to.y - from.y);
+		to.y -= (to.y - prms->m);
+	}
+	k_vector(&from, prms->k);
+	k_vector(&to, prms->k);
 	ft_put_line2(prms, from, to, gr);
 }
