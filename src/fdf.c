@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/21 06:24:12 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/21 06:40:56 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,6 +242,7 @@ int		ft_x_mouse_move(int x, int y, t_params *prms)
 		v0.x = 0;
 		v1.x = 0;
 		angle = get_angle(v0, v1);
+		printf("%f\n", angle);
 		if ((*(unsigned long long int *)&angle & 0x7ff0000000000000) == 0x7ff0000000000000)
 			angle = 0;
 //		printf("before:\tv0(%f, %f, %f) & v1(%f, %f, %f)\n", v0.x, v0.y, v0.z, v1.x, v1.y, v1.z);
@@ -402,7 +403,7 @@ void	ft_draw(t_params *prms)
 	bufv = add_vector(bufv, prms->shift);
 //	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
 	//ft_put_cube(prms, min, bufv, gr, 0);
-	if (mod_vector(bufv) > mod_vector(min))
+	if (bufv.z < min.z)
 		min = bufv;
 	bufv = get_vector(0, prms->y - 1, 0);
 	bufv = add_vector(bufv, prms->start);
@@ -411,7 +412,7 @@ void	ft_draw(t_params *prms)
 	bufv = add_vector(bufv, prms->shift);
 //	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
 	//ft_put_cube(prms, min, bufv, gr, 0);
-	if (mod_vector(bufv) > mod_vector(min))
+	if (bufv.z < min.z)
 		min = bufv;
 	bufv = get_vector(prms->x - 1, prms->y - 1, 0);
 	bufv = add_vector(bufv, prms->start);
@@ -420,7 +421,7 @@ void	ft_draw(t_params *prms)
 	bufv = add_vector(bufv, prms->shift);
 //	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
 	//ft_put_cube(prms, min, bufv, gr, 0);
-	if (mod_vector(bufv) > mod_vector(min))
+	if (bufv.z < min.z)
 		min = bufv;
 	min = add_vector(min, rev_vector(prms->shift));
 	min = add_vector(turn_vector(min, prms->q, 0), rev_vector(prms->start));
