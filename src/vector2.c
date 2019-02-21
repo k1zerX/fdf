@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 19:39:35 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 04:05:05 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/21 05:45:57 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ double		scalar_mul(t_vector a, t_vector b)
 
 double		get_angle(t_vector a, t_vector b)
 {
-	return (scalar_mul(a, b) / mod_vector(a) / mod_vector(b));
+	return (acos(scalar_mul(a, b) / mod_vector(a) / mod_vector(b)));
 }
 
 t_vector	vector_mul(t_vector a, t_vector b)

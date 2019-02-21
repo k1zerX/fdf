@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:20:04 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/18 21:13:40 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/20 23:35:25 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,6 @@ typedef struct		s_params
 	int				n;
 	int				m;
 	t_vector		start;
-	double			k;
 	double			d;
 }					t_params;
 

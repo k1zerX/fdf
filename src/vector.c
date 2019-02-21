@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:02:37 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 02:57:33 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/21 02:02:17 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,4 +51,14 @@ t_vector	turn_vector(t_vector v, t_qtrn q, char clockwise)
 	else
 		tmp = mul_qtrn(mul_qtrn(rev_qtrn(q), tmp), q);
 	return (tmp.v);
+}
+
+t_vector	get_vector(double x, double y, double z)
+{
+	t_vector	v;
+
+	v.x = x;
+	v.y = y;
+	v.z = z;
+	return (v);
 }

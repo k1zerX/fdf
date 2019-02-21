@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 18:58:04 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/17 04:05:12 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/21 02:02:15 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,5 +24,6 @@ double		scalar_mul(t_vector a, t_vector b);
 double		get_angle(t_vector a, t_vector b);
 t_vector	vector_mul(t_vector a, t_vector b);
 void		project_vector(t_vector *a, t_vector b);
+t_vector	get_vector(double x, double y, double z);
 
 #endif
