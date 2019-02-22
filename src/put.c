@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:06:59 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/21 05:23:16 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/23 01:50:07 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,25 +17,23 @@ void		ft_put_2pixel(t_params *prms, int x, int y, t_gradient gr)
 	int		color;
 	int		i;
 
-	x += prms->n / 2;
-	y += prms->m / 2;
-	if (gr.inv)
-		ft_swap(&x, &y, sizeof(x));
-	color = (int)round((1 - gr.opacity) * 255);
+	color = (int)round((1 - (1 - gr.opacity_y) * gr.opacity_x) * 255);
 	i = 16;
 	while (i >= 0)
 	{
 		color <<= 8;
 		color |= (int)round((gr.to & (0xff << i)) * gr.k \
 			   	+ (gr.from & (0xff << i)) * (1 - gr.k)) >> i;
-		//printf("%#010x\n", gr.to & (0xff << i));
 		i -= 8;
 	}
-	mlx_pixel_put(prms->mlx, prms->win, x, y, color);
-	color &= 0x00ffffff;
-	color |= (int)round(gr.opacity * 255) << 24;
 	if (gr.inv)
-		mlx_pixel_put(prms->mlx, prms->win, x + 1, y, color);
+		mlx_pixel_put(prms->mlx, prms->win, y, x, color);
+	else
+		mlx_pixel_put(prms->mlx, prms->win, x, y, color);
+	color &= 0x00ffffff;
+	color |= (int)round((1 - gr.opacity_y * gr.opacity_x) * 255) << 24;
+	if (gr.inv)
+		mlx_pixel_put(prms->mlx, prms->win, y + 1, x, color);
 	else
 		mlx_pixel_put(prms->mlx, prms->win, x, y + 1, color);
 }
@@ -49,21 +47,23 @@ void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 
 	grk = 1 / (to.x - from.x);
 	gr.k = 1;
-	gr.opacity = modf(to.y, &y) * modf(to.x, &x); 
+	gr.opacity_x = modf(to.x, &x);
+	gr.opacity_y = modf(to.y, &y);
 	ft_put_2pixel(prms, (int)x, (int)y, gr);
 	gr.k = 0;
-	k = 1 - modf(from.x, &x);
-	gr.opacity = modf(from.y, &y) * k;
+	gr.opacity_x = 1 - modf(from.x, &x);
+	gr.opacity_y = modf(from.y, &y);
 	ft_put_2pixel(prms, (int)x, (int)y, gr);
-	gr.k = grk * k; 
+	gr.k = grk * gr.opacity_x; 
 	k = (to.y - from.y) * grk;
-	from.y = y;
-	while (++x < to.x)
+	gr.opacity_x = 1;
+	from.y = y + k;
+	while (++x <= to.x)
 	{
-		from.y += k;
-		gr.opacity = 1 - modf(from.y, &y);
+		gr.opacity_y = modf(from.y, &y);
 		ft_put_2pixel(prms, (int)x, (int)y, gr);
 		gr.k += grk;
+		from.y += k;
 	}
 }
 
@@ -143,5 +143,9 @@ void		ft_put_line(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 	}
 	k_vector(&from, K);
 	k_vector(&to, K);
+	from.x += prms->n / 2;
+	from.y += prms->m / 2;
+	to.x += prms->n / 2;
+	to.y += prms->m / 2;
 	ft_put_line2(prms, from, to, gr);
 }

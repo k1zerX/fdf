@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:20:04 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/20 23:35:25 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/23 01:10:14 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@ typedef struct		s_gradient
 {
 	int				from;
 	int				to;
-	double			opacity;
+	double			opacity_x;
+	double			opacity_y;
 	double			k;
 	char			inv;
 }					t_gradient;
