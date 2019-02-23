@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:58 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/21 05:00:10 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/23 07:05:50 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,5 +34,9 @@
 # define RED 0xff0000
 # define GREEN 0x00ff00
 # define BLUE 0x0000ff
+# define R 0
+# define G 1
+# define B 2
+# define A 3
 
 #endif

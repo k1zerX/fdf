@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/23 02:29:17 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/23 09:03:35 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,10 @@ void	ft_exit(int status, t_params *prms)
 		free(g_qx);
 		free(g_qy);
 		if (status != READ_ERROR)
+		{
 			mlx_destroy_window(prms->mlx, prms->win);
+			free(prms->deep_map);
+		}
 		if (status == ERROR || status == READ_ERROR)
 			write(2, "Error\n", 6);
 	}
@@ -402,122 +405,116 @@ void	ft_test(t_params *prms)
 	ft_put_line(prms, from, to, gr);
 }
 
-void	ft_draw(t_params *prms)
+void	ft_norm_trio(t_vector *a, t_vector *b, t_vector *c)
 {
-	int			color;
-	t_vector	axis;
-	t_vector	v;
-	t_vector	from;
-	t_qtrn		q;
-	t_draw		*tmp;
-	t_elem		*elem;
-	t_queue		*queue;
-	t_draw		*buf;
-	t_gradient	gr;
-	t_vector	bufv;
-	t_vector	min;
+	if (a->y > b->y)
+		ft_swap(a, b, sizeof(*a));
+	if (a->y > c->y)
+		ft_swap(a, b, sizeof(*a));
+	if (b->x > c->x)
+		ft_swap(b, c, sizeof(*b));
+}
 
-	mlx_clear_window(prms->mlx, prms->win);
-	bufv = get_vector(0, 0, 0);
-	bufv = add_vector(bufv, prms->start);
-//	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
-	bufv = turn_vector(bufv, prms->q, 1);
-	bufv = add_vector(bufv, prms->shift);
-//	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
-	//mlx_string_put(prms->mlx, prms->win, (int)bufv.x + prms->shift.x, (int)bufv.y + prms->shift.y, 0x00ffffff, ft_itoa((int)(bufv.z * 100)));
-	//ft_put_cube(prms, min, bufv, gr, 0);
-	min = bufv;
-	bufv = get_vector(prms->x - 1, 0, 0);
-	bufv = add_vector(bufv, prms->start);
-//	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
-	bufv = turn_vector(bufv, prms->q, 1);
-	bufv = add_vector(bufv, prms->shift);
-//	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
-	//ft_put_cube(prms, min, bufv, gr, 0);
-	if (bufv.z < min.z)
-		min = bufv;
-	bufv = get_vector(0, prms->y - 1, 0);
-	bufv = add_vector(bufv, prms->start);
-//	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
-	bufv = turn_vector(bufv, prms->q, 1);
-	bufv = add_vector(bufv, prms->shift);
-//	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
-	//ft_put_cube(prms, min, bufv, gr, 0);
-	if (bufv.z < min.z)
-		min = bufv;
-	bufv = get_vector(prms->x - 1, prms->y - 1, 0);
-	bufv = add_vector(bufv, prms->start);
-//	printf("\t%.0f, %.0f, %.0f ===>", bufv.x, bufv.y, bufv.z);
-	bufv = turn_vector(bufv, prms->q, 1);
-	bufv = add_vector(bufv, prms->shift);
-//	printf("%f, %f, %f\n", bufv.x, bufv.y, bufv.z);
-	//ft_put_cube(prms, min, bufv, gr, 0);
-	if (bufv.z < min.z)
-		min = bufv;
-	min = add_vector(min, rev_vector(prms->shift));
-	min = add_vector(turn_vector(min, prms->q, 0), rev_vector(prms->start));
-	//printf("(%f, %f, %f) vs ", min.x, min.y, min.z);
-	min.x = round(min.x);
-	min.y = round(min.y);
-	min.z = round(min.z);
-	//printf("(%f, %f, %f)\n", min.x, min.y, min.z);
-	//ft_put_cube(prms, bufv, min, gr, 1);
-	//printf("%.0f, %.0f, %.0f\n\n", min.x, min.y, min.z);
-	//printf("w = %f, v = (%f, %f, %f)\n", prms->q.w / 4, prms->q.v.x / 4, prms->q.v.y / 4, prms->q.v.z / 4);
-	//printf("%f, %f, %f\n", prms->start.x, prms->start.y, prms->start.z);
-//	ft_put_axis(prms);
-//	from.x = 0.0;
-//	from.y = 0.0;
-	from = min;
-	//printf("n = %d, m = %d ||| %d, %d, %f\n", prms->n, prms->m, (int)from.x, (int)from.y, from.z);
-	from.z = prms->map[(int)from.y][(int)from.x][0];
-//	printf("OKOKOKOK\n");
-	queue = ft_queue_new();
-	buf = new_draw(prms, from);
-	ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
-	while (queue->len)
+void	fill_img(t_params *prms, t_vector a, t_vector b, t_vector c)
+{
+	double	step_l;
+	double	step_r;
+	double	x_from;
+	double	x_to;
+	double	z;
+	int		y_to;
+	int		x;
+	int		y;
+
+	ft_norm_trio(&a, &b, &c);
+	step_l = (b.x - a.x) / (b.y - a.y);
+	step_r = (c.x - a.x) / (c.y - a.y);
+	y_to = (int)(FT_MAX(b.y, c.y));
+	y = (int)a.y;
+	while (y < y_to)
 	{
-		//printf("not to draw lines which are outside the window's borders, fix angles in qtrns & manage correctly hidden surfaces\n");
-		elem = ft_queue_pop(queue);
-		tmp = (t_draw *)elem->content;
-		from = tmp->v;
-		gr.from = tmp->color;
-		//printf("\nfrom: %f, %f, %f\n", from.x, from.y, from.z);
-		//printf("x_step = %d, y_step = %d\n", FT_SIGN(-min.x), FT_SIGN(-min.y));
-		tmp->v.x += FT_SIGN(-min.x);
-		if (tmp->v.x < prms->x && tmp->v.x >= 0)
+		if (x_from == b.x)
+			step_l = (c.x - b.x) / (c.y - b.y);
+		if (x_to == c.x)
+			step_r = (b.x - c.x) / (c.y - b.y);
+		x_from += step_l;
+		x_to += step_r;
+		++y;
+		x = (int)x_from;
+		while (++x < (int)x_to)
 		{
-			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
-			gr.to = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
-			//printf("%X --> %X\n", gr.from, gr.to);
-			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
-			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
-			//printf("%d to %d\n", gr.from, gr.to);
-			//printf("%f, %f, %f to %f, %f, %f", from.x, from.y, from.z, tmp->v.x, tmp->v.y, tmp->v.z);
-			ft_put_line(prms, from, tmp->v, gr);
-			buf = new_draw(prms, tmp->v);
-			ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
-		}
-		tmp->v.x -= FT_SIGN(-min.x);
-		tmp->v.y += FT_SIGN(-min.y);
-		if (tmp->v.y < prms->y && tmp->v.y >= 0)
-		{
-			//printf("v: %f, %f, %f\n", v.x, v.y, v.z);
-			tmp->v.z = prms->map[(int)tmp->v.y][(int)tmp->v.x][0];
-			gr.to = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
-			//printf("%.0f < %.0f ||| %.0f, %.0f => %.0f\n", tmp->v.y, prms->m, tmp->v.x, tmp->v.y, tmp->v.z);
-			ft_put_line(prms, from, tmp->v, gr);
-			if (tmp->v.x == min.x)
+			z = ((c.z - a.z) / (c.x - a.x) * x_to - (b.z - a.z) / (b.x - a.x) * x_from) / (x_to - x_from) * x;
+			if (z > prms->deep_map[y * prms->n + x])
 			{
-				buf = new_draw(prms, tmp->v);
-				ft_queue_push(queue, ft_new_elem(buf, sizeof(*buf), 0));
+				prms->img[(y * prms->n + x) * 4 + R] = 0;
+				prms->img[(y * prms->n + x) * 4 + G] = 0;
+				prms->img[(y * prms->n + x) * 4 + B] = 0;
+				prms->img[(y * prms->n + x) * 4 + A] = 0;
 			}
 		}
-		tmp->v.y -= FT_SIGN(-min.y);
-		free(tmp);
-		free(elem);
 	}
-	free(queue);
+}
+
+void	ft_draw_square(t_params *prms, int x, int y)
+{
+	t_vector	arr[4];
+	t_gradient	gr; // убрать градиент из пут_лайна
+
+	printf("OK\n");
+	arr[0] = get_vector(x, y, prms->map[y][x][0]);
+	arr[1] = get_vector(x + 1, y, prms->map[y][x + 1][0]);
+	arr[2] = get_vector(x, y + 1, prms->map[y + 1][x][0]);
+	arr[3] = get_vector(x + 1, y + 1, prms->map[y + 1][x + 1][0]);
+	gr.from = prms->map[(int)arr[0].y][(int)arr[0].x][1];
+	gr.from = prms->map[(int)arr[1].y][(int)arr[1].x][1];
+	ft_put_line(prms, arr[0], arr[1], gr);
+	gr.from = prms->map[(int)arr[0].y][(int)arr[0].x][1];
+	gr.from = prms->map[(int)arr[2].y][(int)arr[2].x][1];
+	ft_put_line(prms, arr[0], arr[2], gr);
+	gr.from = prms->map[(int)arr[1].y][(int)arr[1].x][1];
+	gr.from = prms->map[(int)arr[3].y][(int)arr[3].x][1];
+	ft_put_line(prms, arr[1], arr[3], gr);
+	gr.from = prms->map[(int)arr[2].y][(int)arr[2].x][1];
+	gr.from = prms->map[(int)arr[3].y][(int)arr[3].x][1];
+	ft_put_line(prms, arr[2], arr[3], gr);
+	arr[0] = turn_vector(arr[0], prms->q, 1);
+	arr[1] = turn_vector(arr[1], prms->q, 1);
+	arr[2] = turn_vector(arr[2], prms->q, 1);
+	arr[3] = turn_vector(arr[3], prms->q, 1);
+	fill_img(prms, arr[0], arr[1], arr[2]);
+	fill_img(prms, arr[1], arr[2], arr[3]);
+	printf("ALERT\n");
+}
+
+void	ft_draw(t_params *prms)
+{
+	int			bits_per_pixel;
+	int			size_line;
+	int			endian;
+	int			i;
+	int			j;
+
+	ft_bzero(prms->deep_map, sizeof(*prms->deep_map) * prms->n * prms->m);
+	mlx_clear_window(prms->mlx, prms->win);
+	prms->img_ptr = mlx_new_image(prms->mlx, prms->n, prms->m);
+	prms->img = mlx_get_data_addr(prms->img_ptr, &bits_per_pixel, &size_line, &endian);
+	j = -1;
+	while (++j < prms->m)
+	{
+		i = -1;
+		while (++i < prms->n)
+			prms->img[(j * prms->n + i) * 4 + A] = 0xff;
+	}
+	j = -1;
+	while (++j < prms->y -1)
+	{
+		i = -1;
+		while (++i < prms->x - 1)
+		{
+//			printf("%d, %d\n", i, j);
+			ft_draw_square(prms, i, j);
+		}
+	}
 	if (prms->xturn)
 		ft_put_axis(prms, get_vector(1, 0, 0), RED);
 	if (prms->yturn)
@@ -527,6 +524,8 @@ void	ft_draw(t_params *prms)
 	/**/
 	//ft_test(prms);
 	/**/
+	mlx_put_image_to_window(prms->mlx, prms->win, prms->img_ptr, 0, 0);
+	mlx_destroy_image(prms->mlx, prms->img_ptr);
 }
 
 void	fill_map_elem(int *elem, char **str)
@@ -674,6 +673,8 @@ void	ft_initialize(t_params *prms)
 		prms->n = 1000;
 		prms->m = 1000;
 	}
+	if (!prms->deep_map)
+		prms->deep_map = ft_memalloc(prms->n * prms->m * sizeof(*prms->deep_map));
 	prms->q = get_qtrn(get_vector(1, 0, 0), M_PI * 2 / 3);
 	prms->q = mul_qtrn(prms->q, get_qtrn(get_vector(0, 1, 0), M_PI * 2 / 3));
 	prms->q = get_qtrn(get_vector(1, 0, 0), 0);
