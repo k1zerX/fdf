@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/23 00:54:34 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/23 02:29:17 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -381,15 +381,23 @@ void	ft_test(t_params *prms)
 
 	gr.from = 0x00ffffff;
 	gr.to = 0x00ff0000;
-	p0.x = 20;
+	p0.x = -20;
 	p0.y = -20;
 	p1.x = 20;
 	p1.y = 20;
 	mlx_clear_window(prms->mlx, prms->win);
 	from = get_vector(0, 0, 0);
 	to = get_vector(p0.x, p0.y, 0);
+	while (++to.x < p1.x)
+		ft_put_line(prms, from, to, gr);
 	ft_put_line(prms, from, to, gr);
 	while (++to.y < p1.y)
+		ft_put_line(prms, from, to, gr);
+	ft_put_line(prms, from, to, gr);
+	while (--to.x > p0.x)
+		ft_put_line(prms, from, to, gr);
+	ft_put_line(prms, from, to, gr);
+	while (--to.y > p0.y)
 		ft_put_line(prms, from, to, gr);
 	ft_put_line(prms, from, to, gr);
 }
@@ -408,7 +416,7 @@ void	ft_draw(t_params *prms)
 	t_gradient	gr;
 	t_vector	bufv;
 	t_vector	min;
-/*
+
 	mlx_clear_window(prms->mlx, prms->win);
 	bufv = get_vector(0, 0, 0);
 	bufv = add_vector(bufv, prms->start);
@@ -516,8 +524,8 @@ void	ft_draw(t_params *prms)
 		ft_put_axis(prms, get_vector(0, 1, 0), GREEN);
 	if (prms->zturn)
 		ft_put_axis(prms, get_vector(0, 0, 1), BLUE);
-	*/
-	ft_test(prms);
+	/**/
+	//ft_test(prms);
 	/**/
 }
 
