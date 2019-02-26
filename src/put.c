@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:06:59 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/23 09:03:44 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/26 19:48:33 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,39 +33,55 @@ void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr)
 	{
 		if (p.z > prms->deep_map[(int)p.x * prms->n + (int)p.y])
 		{
-			prms->img[((int)p.x * prms->n + (int)p.y) * 4 + R] = (int)round((gr.to & 0xff0000) * gr.k + (gr.from & 0xff0000) * (1 - gr.k));
-			prms->img[((int)p.x * prms->n + (int)p.y) * 4 + G] = (int)round((gr.to & 0xff00) * gr.k + (gr.from & 0xff00) * (1 - gr.k));
-			prms->img[((int)p.x * prms->n + (int)p.y) * 4 + B] = (int)round((gr.to & 0xff) * gr.k + (gr.from & 0xff) * (1 - gr.k));
-			prms->img[((int)p.x * prms->n + (int)p.y) * 4 + A] = (int)round((1 - (1 - gr.opacity_y) * gr.opacity_x) * 255);
+			((int *)prms->img)[(int)p.x * prms->n + (int)p.y] = color;
+//			prms->img[((int)p.x * prms->n + (int)p.y) * 4 + R] = (int)round((gr.to & 0xff0000) * gr.k + (gr.from & 0xff0000) * (1 - gr.k));
+//			prms->img[((int)p.x * prms->n + (int)p.y) * 4 + G] = (int)round((gr.to & 0xff00) * gr.k + (gr.from & 0xff00) * (1 - gr.k));
+//			prms->img[((int)p.x * prms->n + (int)p.y) * 4 + B] = (int)round((gr.to & 0xff) * gr.k + (gr.from & 0xff) * (1 - gr.k));
+//			prms->img[((int)p.x * prms->n + (int)p.y) * 4 + A] = (int)round((1 - (1 - gr.opacity_y) * gr.opacity_x) * 255);
 			prms->deep_map[(int)p.x * prms->n + (int)p.y] = p.z;
 		}
+		else
+			((int *)prms->img)[(int)p.x * prms->n + (int)p.y] = 0x00ff0000;
+		color &= 0x00ffffff;
+		color |= (int)round((1 - gr.opacity_y * gr.opacity_x) * 255) << 24;
 		if (p.z > prms->deep_map[(int)p.x * prms->n + (int)p.y + 1])
 		{
-			prms->img[((int)p.x * prms->n + (int)p.y + 1) * 4 + R] = (int)round((gr.to & 0xff0000) * gr.k + (gr.from & 0xff0000) * (1 - gr.k));
-			prms->img[((int)p.x * prms->n + (int)p.y + 1) * 4 + G] = (int)round((gr.to & 0xff00) * gr.k + (gr.from & 0xff00) * (1 - gr.k));
-			prms->img[((int)p.x * prms->n + (int)p.y + 1) * 4 + B] = (int)round((gr.to & 0xff) * gr.k + (gr.from & 0xff) * (1 - gr.k));
-			prms->img[((int)p.x * prms->n + (int)p.y + 1) * 4 + A] = (int)round((1 - gr.opacity_y * gr.opacity_x) * 255);
+			((int *)prms->img)[(int)p.x * prms->n + (int)p.y + 1] = color;
+//			prms->img[((int)p.x * prms->n + (int)p.y + 1) * 4 + R] = (int)round((gr.to & 0xff0000) * gr.k + (gr.from & 0xff0000) * (1 - gr.k));
+//			prms->img[((int)p.x * prms->n + (int)p.y + 1) * 4 + G] = (int)round((gr.to & 0xff00) * gr.k + (gr.from & 0xff00) * (1 - gr.k));
+//			prms->img[((int)p.x * prms->n + (int)p.y + 1) * 4 + B] = (int)round((gr.to & 0xff) * gr.k + (gr.from & 0xff) * (1 - gr.k));
+//			prms->img[((int)p.x * prms->n + (int)p.y + 1) * 4 + A] = (int)round((1 - gr.opacity_y * gr.opacity_x) * 255);
 			prms->deep_map[(int)p.x * prms->n + (int)p.y + 1] = p.z;
 		}
+		else
+			((int *)prms->img)[(int)p.x * prms->n + (int)p.y + 1] = 0x00ff0000;
 	}
 	else
 	{
 		if (p.z > prms->deep_map[(int)p.y * prms->n + (int)p.x])
 		{
-			prms->img[((int)p.y * prms->n + (int)p.x) * 4 + R] = (int)round((gr.to & 0xff0000) * gr.k + (gr.from & 0xff0000) * (1 - gr.k));
-			prms->img[((int)p.y * prms->n + (int)p.x) * 4 + G] = (int)round((gr.to & 0xff00) * gr.k + (gr.from & 0xff00) * (1 - gr.k));
-			prms->img[((int)p.y * prms->n + (int)p.x) * 4 + B] = (int)round((gr.to & 0xff) * gr.k + (gr.from & 0xff) * (1 - gr.k));
-			prms->img[((int)p.y * prms->n + (int)p.x) * 4 + A] = (int)round((1 - (1 - gr.opacity_y) * gr.opacity_x) * 255);
+			((int *)prms->img)[(int)p.y * prms->n + (int)p.x] = color;
+//			prms->img[((int)p.y * prms->n + (int)p.x) * 4 + R] = (int)round((gr.to & 0xff0000) * gr.k + (gr.from & 0xff0000) * (1 - gr.k));
+//			prms->img[((int)p.y * prms->n + (int)p.x) * 4 + G] = (int)round((gr.to & 0xff00) * gr.k + (gr.from & 0xff00) * (1 - gr.k));
+//			prms->img[((int)p.y * prms->n + (int)p.x) * 4 + B] = (int)round((gr.to & 0xff) * gr.k + (gr.from & 0xff) * (1 - gr.k));
+//			prms->img[((int)p.y * prms->n + (int)p.x) * 4 + A] = (int)round((1 - (1 - gr.opacity_y) * gr.opacity_x) * 255);
 			prms->deep_map[(int)p.y * prms->n + (int)p.x] = p.z;
 		}
+		else
+			((int *)prms->img)[(int)p.y * prms->n + (int)p.x] = 0x00ff0000;
+		color &= 0x00ffffff;
+		color |= (int)round((1 - gr.opacity_y * gr.opacity_x) * 255) << 24;
 		if (p.z > prms->deep_map[(int)(p.y + 1) * prms->n + (int)p.x])
 		{
-			prms->img[((int)(p.y + 1) * prms->n + (int)p.x) * 4 + R] = (int)round((gr.to & 0xff0000) * gr.k + (gr.from & 0xff0000) * (1 - gr.k));
-			prms->img[((int)(p.y + 1) * prms->n + (int)p.x) * 4 + G] = (int)round((gr.to & 0xff00) * gr.k + (gr.from & 0xff00) * (1 - gr.k));
-			prms->img[((int)(p.y + 1) * prms->n + (int)p.x) * 4 + B] = (int)round((gr.to & 0xff) * gr.k + (gr.from & 0xff) * (1 - gr.k));
-			prms->img[((int)(p.y + 1) * prms->n + (int)p.x) * 4 + A] = (int)round((1 - gr.opacity_y * gr.opacity_x) * 255);
+			((int *)prms->img)[(int)(p.y + 1) * prms->n + (int)p.x] = color;
+//			prms->img[((int)(p.y + 1) * prms->n + (int)p.x) * 4 + R] = (int)round((gr.to & 0xff0000) * gr.k + (gr.from & 0xff0000) * (1 - gr.k));
+//			prms->img[((int)(p.y + 1) * prms->n + (int)p.x) * 4 + G] = (int)round((gr.to & 0xff00) * gr.k + (gr.from & 0xff00) * (1 - gr.k));
+//			prms->img[((int)(p.y + 1) * prms->n + (int)p.x) * 4 + B] = (int)round((gr.to & 0xff) * gr.k + (gr.from & 0xff) * (1 - gr.k));
+//			prms->img[((int)(p.y + 1) * prms->n + (int)p.x) * 4 + A] = (int)round((1 - gr.opacity_y * gr.opacity_x) * 255);
 			prms->deep_map[(int)(p.y + 1) * prms->n + (int)p.x] = p.z;
 		}
+		else
+			((int *)prms->img)[(int)(p.y + 1) * prms->n + (int)p.x] = 0x00ff0000;
 	}
 //	return (0);
 }
@@ -120,9 +136,15 @@ void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 	}
 }
 
-void		ft_put_line(t_params *prms, t_vector from, t_vector to, t_gradient gr)
+void		ft_put_line(t_params *prms, t_vector from, t_vector to)
 {
+	t_gradient	gr;
+
 	//printf("d = %f, sh.z = %f\n", prms->d, prms->shift.z);
+	gr.from = prms->map[(int)from.y][(int)from.x][1];
+	gr.to = prms->map[(int)to.y][(int)to.x][1];
+	if ((gr.from & 0xff) > 200 || (gr.to & 0xff) > 200)
+		printf("%f, %f, %f --> %f, %f, %f\n", from.x, from.y, from.z, to.x, to.y, to.z);
 	from = turn_vector(add_vector(from, prms->start), prms->q, 1);
 	from = add_vector(from, prms->shift);
 	to = turn_vector(add_vector(to, prms->start), prms->q, 1);

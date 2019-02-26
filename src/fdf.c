@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/23 09:03:35 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/26 21:56:05 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,8 @@ int		ft_mouse_press(int button, int x, int y, t_params *prms)
 	else */
 	if (button == 1)
 	{
-		prms->click = 1;
+		if (x >= 0 && y >= 0 && x < prms->n && y < prms->m)
+			prms->click = 1;
 		prms->click_p.x = x;
 		prms->click_p.y = y;
 	}
@@ -353,7 +354,7 @@ void	ft_put_axis(t_params *prms, t_vector axis, int color)
 	gr.from |= (int)round((double)(((color >> 8) & 0xff) * 0.25)) << 8;
 	gr.from |= (int)round((double)((color) & 0xff) * 0.25);
 	gr.to = color;
-	ft_put_line(prms, from, axis, gr);
+	ft_put_line(prms, from, axis);
 	from = axis;
 	alpha = 0;
 	while (alpha < M_PI * 16)
@@ -369,7 +370,7 @@ void	ft_put_axis(t_params *prms, t_vector axis, int color)
 		axis.x += !buf.x * (!buf.y * sin(alpha) + !buf.z * cos(alpha));
 		axis.y += !buf.y * (!buf.z * sin(alpha) + !buf.x * cos(alpha));
 		axis.z += !buf.z * (!buf.x * sin(alpha) + !buf.y * cos(alpha));
-		ft_put_line(prms, from, axis, gr);
+		ft_put_line(prms, from, axis);
 		alpha += 0.1;
 	}
 }
@@ -392,17 +393,17 @@ void	ft_test(t_params *prms)
 	from = get_vector(0, 0, 0);
 	to = get_vector(p0.x, p0.y, 0);
 	while (++to.x < p1.x)
-		ft_put_line(prms, from, to, gr);
-	ft_put_line(prms, from, to, gr);
+		ft_put_line(prms, from, to);
+	ft_put_line(prms, from, to);
 	while (++to.y < p1.y)
-		ft_put_line(prms, from, to, gr);
-	ft_put_line(prms, from, to, gr);
+		ft_put_line(prms, from, to);
+	ft_put_line(prms, from, to);
 	while (--to.x > p0.x)
-		ft_put_line(prms, from, to, gr);
-	ft_put_line(prms, from, to, gr);
+		ft_put_line(prms, from, to);
+	ft_put_line(prms, from, to);
 	while (--to.y > p0.y)
-		ft_put_line(prms, from, to, gr);
-	ft_put_line(prms, from, to, gr);
+		ft_put_line(prms, from, to);
+	ft_put_line(prms, from, to);
 }
 
 void	ft_norm_trio(t_vector *a, t_vector *b, t_vector *c)
@@ -410,8 +411,21 @@ void	ft_norm_trio(t_vector *a, t_vector *b, t_vector *c)
 	if (a->y > b->y)
 		ft_swap(a, b, sizeof(*a));
 	if (a->y > c->y)
-		ft_swap(a, b, sizeof(*a));
-	if (b->x > c->x)
+		ft_swap(a, c, sizeof(*a));
+	if (a->y == b->y)
+	{
+		if (a->x > b->x)
+			ft_swap(a, b, sizeof(*a));
+		return ;
+	}
+	if (a->y == c->y)
+	{
+		if (a->x > c->x)
+			ft_swap(a, c, sizeof(*a));
+		ft_swap(b, c, sizeof(*b));
+		return ;
+	}
+	if ((a->x - b->x) / (a->y - b->y) > (a->x - c->x) / (a->y - c->y))
 		ft_swap(b, c, sizeof(*b));
 }
 
@@ -427,63 +441,98 @@ void	fill_img(t_params *prms, t_vector a, t_vector b, t_vector c)
 	int		y;
 
 	ft_norm_trio(&a, &b, &c);
+//	printf("a: %f, %f, %f\n", a.x, a.y, a.x);
+//	printf("b: %f, %f, %f\n", b.x, b.y, b.x);
+//	printf("c: %f, %f, %f\n", c.x, c.y, c.x);
 	step_l = (b.x - a.x) / (b.y - a.y);
+	if (b.y == a.y)
+		step_l = 0;
 	step_r = (c.x - a.x) / (c.y - a.y);
+	if (c.y == a.y)
+		step_r = 0;
 	y_to = (int)(FT_MAX(b.y, c.y));
+	x_from = a.x;
+	x_to = a.x;
 	y = (int)a.y;
+//	printf("begin\n");
 	while (y < y_to)
 	{
-		if (x_from == b.x)
-			step_l = (c.x - b.x) / (c.y - b.y);
-		if (x_to == c.x)
-			step_r = (b.x - c.x) / (c.y - b.y);
+		printf("x_from = %f vs b.x = %f\n", x_from, b.x);
+		printf("x_to = %f vs c.x = %f\n\n", x_to, c.x);
+		if (b.y <= c.y)
+			if (x_from * FT_SIGN(step_l) >= b.x * FT_SIGN(step_l))
+			{
+				step_l = (c.x - b.x) / (c.y - b.y);
+//				printf("step_l = %f\n", step_l);
+				x_from = b.x + ((double)y - b.y) * step_l;
+			}
+		if (c.y <= b.y)
+			if (x_to * FT_SIGN(step_r) >= c.x * FT_SIGN(step_l))
+			{
+				step_r = (b.x - c.x) / (b.y - c.y);
+//				printf("step_r = %f\n", step_r);
+				x_to = c.x + ((double)y - c.y) * step_r;
+			}
+		x = (int)x_from;
+		while (x < (int)x_to)
+		{
+//	printf("%d, %d\n", x, y);
+			z = ((c.z - a.z) / (c.x - a.x) * x_to - (b.z - a.z) / (b.x - a.x) * x_from) / (x_to - x_from) * x;
+			if (z > prms->deep_map[(y + prms->m / 2) * prms->n + x + prms->n / 2])
+			{
+				prms->deep_map[(y + prms->m / 2) * prms->n + x + prms->n / 2] = z;
+				((int *)prms->img)[(y + prms->m / 2) * prms->n + x + prms->n / 2] = GREEN;
+			}
+			++x;
+//	printf("OK\n\n");
+		}
 		x_from += step_l;
 		x_to += step_r;
 		++y;
-		x = (int)x_from;
-		while (++x < (int)x_to)
-		{
-			z = ((c.z - a.z) / (c.x - a.x) * x_to - (b.z - a.z) / (b.x - a.x) * x_from) / (x_to - x_from) * x;
-			if (z > prms->deep_map[y * prms->n + x])
-			{
-				prms->img[(y * prms->n + x) * 4 + R] = 0;
-				prms->img[(y * prms->n + x) * 4 + G] = 0;
-				prms->img[(y * prms->n + x) * 4 + B] = 0;
-				prms->img[(y * prms->n + x) * 4 + A] = 0;
-			}
-		}
 	}
+//	printf("end\n");
+}
+
+void	ft_draw_triangle(t_params *prms, t_vector a, t_vector b, t_vector c)
+{
+	ft_put_line(prms, a, b);
+	ft_put_line(prms, a, c);
+	a = add_vector(a, prms->start);
+	b = add_vector(b, prms->start);
+	c = add_vector(c, prms->start);
+	a = turn_vector(a, prms->q, 1);
+	b = turn_vector(b, prms->q, 1);
+	c = turn_vector(c, prms->q, 1);
+	a = add_vector(a, prms->shift);
+	b = add_vector(b, prms->shift);
+	c = add_vector(c, prms->shift);
+	a.x = a.x * prms->d / (a.z + prms->d);
+	a.y = a.y * prms->d / (a.z + prms->d);
+	b.x = b.x * prms->d / (b.z + prms->d);
+	b.y = b.y * prms->d / (b.z + prms->d);
+	c.x = c.x * prms->d / (c.z + prms->d);
+	c.y = c.y * prms->d / (c.z + prms->d);
+	k_vector(&a, K);
+	k_vector(&b, K);
+	k_vector(&c, K);
+	fill_img(prms, a, b, c);
 }
 
 void	ft_draw_square(t_params *prms, int x, int y)
 {
-	t_vector	arr[4];
-	t_gradient	gr; // убрать градиент из пут_лайна
+	t_vector	a;
+	t_vector	b;
+	t_vector	c;
+	t_vector	d;
 
-	printf("OK\n");
-	arr[0] = get_vector(x, y, prms->map[y][x][0]);
-	arr[1] = get_vector(x + 1, y, prms->map[y][x + 1][0]);
-	arr[2] = get_vector(x, y + 1, prms->map[y + 1][x][0]);
-	arr[3] = get_vector(x + 1, y + 1, prms->map[y + 1][x + 1][0]);
-	gr.from = prms->map[(int)arr[0].y][(int)arr[0].x][1];
-	gr.from = prms->map[(int)arr[1].y][(int)arr[1].x][1];
-	ft_put_line(prms, arr[0], arr[1], gr);
-	gr.from = prms->map[(int)arr[0].y][(int)arr[0].x][1];
-	gr.from = prms->map[(int)arr[2].y][(int)arr[2].x][1];
-	ft_put_line(prms, arr[0], arr[2], gr);
-	gr.from = prms->map[(int)arr[1].y][(int)arr[1].x][1];
-	gr.from = prms->map[(int)arr[3].y][(int)arr[3].x][1];
-	ft_put_line(prms, arr[1], arr[3], gr);
-	gr.from = prms->map[(int)arr[2].y][(int)arr[2].x][1];
-	gr.from = prms->map[(int)arr[3].y][(int)arr[3].x][1];
-	ft_put_line(prms, arr[2], arr[3], gr);
-	arr[0] = turn_vector(arr[0], prms->q, 1);
-	arr[1] = turn_vector(arr[1], prms->q, 1);
-	arr[2] = turn_vector(arr[2], prms->q, 1);
-	arr[3] = turn_vector(arr[3], prms->q, 1);
-	fill_img(prms, arr[0], arr[1], arr[2]);
-	fill_img(prms, arr[1], arr[2], arr[3]);
-	printf("ALERT\n");
+	a = get_vector(x, y, prms->map[y][x][0]);
+	b = get_vector(x + 1, y, prms->map[y][x + 1][0]);
+	c = get_vector(x, y + 1, prms->map[y + 1][x][0]);
+	d = get_vector(x + 1, y + 1, prms->map[y + 1][x + 1][0]);
+	ft_draw_triangle(prms, a, b, c);
+//	ft_draw_triangle(prms, d, b, c);
+	ft_put_line(prms, a, d);
+	ft_put_line(prms, b, c);
 }
 
 void	ft_draw(t_params *prms)
@@ -494,7 +543,6 @@ void	ft_draw(t_params *prms)
 	int			i;
 	int			j;
 
-	ft_bzero(prms->deep_map, sizeof(*prms->deep_map) * prms->n * prms->m);
 	mlx_clear_window(prms->mlx, prms->win);
 	prms->img_ptr = mlx_new_image(prms->mlx, prms->n, prms->m);
 	prms->img = mlx_get_data_addr(prms->img_ptr, &bits_per_pixel, &size_line, &endian);
@@ -503,7 +551,11 @@ void	ft_draw(t_params *prms)
 	{
 		i = -1;
 		while (++i < prms->n)
+		{
 			prms->img[(j * prms->n + i) * 4 + A] = 0xff;
+			prms->deep_map[j * prms->n + i] = -1.0 / 0.0;
+//			printf("%f\n", prms->deep_map[j * prms->n + i]);
+		}
 	}
 	j = -1;
 	while (++j < prms->y -1)
@@ -521,11 +573,20 @@ void	ft_draw(t_params *prms)
 		ft_put_axis(prms, get_vector(0, 1, 0), GREEN);
 	if (prms->zturn)
 		ft_put_axis(prms, get_vector(0, 0, 1), BLUE);
+/*	printf("--------------------------------------\n");
+	j = -1;
+	while (++j < prms->m)
+	{
+		i = -1;
+		while (++i < prms->n)
+			if (prms->deep_map[j * prms->n + i] > 0)
+				printf("%f\m", prms->deep_map[j * prms->n + i]);
+	}
+	printf("--------------------------------------\n");*/
 	/**/
 	//ft_test(prms);
 	/**/
 	mlx_put_image_to_window(prms->mlx, prms->win, prms->img_ptr, 0, 0);
-	mlx_destroy_image(prms->mlx, prms->img_ptr);
 }
 
 void	fill_map_elem(int *elem, char **str)
