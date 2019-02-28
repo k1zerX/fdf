@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/26 21:56:05 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/28 15:59:13 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,17 +328,6 @@ int		ft_mouse_move(int x, int y, t_params *prms)
 	return (0);
 }
 
-t_draw	*new_draw(t_params *prms, t_vector v)
-{
-	t_draw	*tmp;
-
-	if (!(tmp = malloc(sizeof(*tmp))))
-		return (NULL);
-	tmp->v = v;
-	tmp->color = prms->map[(int)tmp->v.y][(int)tmp->v.x][1];
-	return (tmp);
-}
-
 void	ft_put_axis(t_params *prms, t_vector axis, int color)
 {
 	t_vector	from;
@@ -416,13 +405,13 @@ void	ft_norm_trio(t_vector *a, t_vector *b, t_vector *c)
 	{
 		if (a->x > b->x)
 			ft_swap(a, b, sizeof(*a));
+		ft_swap(b, c, sizeof(*b));
 		return ;
 	}
 	if (a->y == c->y)
 	{
 		if (a->x > c->x)
 			ft_swap(a, c, sizeof(*a));
-		ft_swap(b, c, sizeof(*b));
 		return ;
 	}
 	if ((a->x - b->x) / (a->y - b->y) > (a->x - c->x) / (a->y - c->y))
@@ -444,21 +433,30 @@ void	fill_img(t_params *prms, t_vector a, t_vector b, t_vector c)
 //	printf("a: %f, %f, %f\n", a.x, a.y, a.x);
 //	printf("b: %f, %f, %f\n", b.x, b.y, b.x);
 //	printf("c: %f, %f, %f\n", c.x, c.y, c.x);
+	x_from = a.x;
+	x_to = a.x;
 	step_l = (b.x - a.x) / (b.y - a.y);
+	printf("||| step_l = %f\n", step_l);
 	if (b.y == a.y)
 		step_l = 0;
 	step_r = (c.x - a.x) / (c.y - a.y);
 	if (c.y == a.y)
-		step_r = 0;
-	y_to = (int)(FT_MAX(b.y, c.y));
-	x_from = a.x;
-	x_to = a.x;
-	y = (int)a.y;
-//	printf("begin\n");
-	while (y < y_to)
 	{
-		printf("x_from = %f vs b.x = %f\n", x_from, b.x);
-		printf("x_to = %f vs c.x = %f\n\n", x_to, c.x);
+		x_to = c.x;
+		step_l = (c.x - b.x) / (c.y - b.y);
+		step_r = 0;
+	}
+	y_to = (int)(FT_MAX(b.y, c.y));
+	y = (int)a.y;
+	printf("x_from = %f, x_to = %f, step_l = %f, step_r = %f\n", x_from, x_to, step_l, step_r);
+//	printf("begin\n");
+	while (y < (int)y_to)
+	{
+//	printf("%f --> %f\n", x_from, x_to);
+//		printf("x_from = %f vs b.x = %f\n", x_from, b.x);
+//		printf("x_to = %f vs c.x = %f\n\n", x_to, c.x);
+//	printf("%f <= %f\n", c.y, b.y);
+//	printf("%f * sign(%f) >= %f * sign(%f)\n\n", x_to, step_r, c.x, step_l);
 		if (b.y <= c.y)
 			if (x_from * FT_SIGN(step_l) >= b.x * FT_SIGN(step_l))
 			{
@@ -467,7 +465,7 @@ void	fill_img(t_params *prms, t_vector a, t_vector b, t_vector c)
 				x_from = b.x + ((double)y - b.y) * step_l;
 			}
 		if (c.y <= b.y)
-			if (x_to * FT_SIGN(step_r) >= c.x * FT_SIGN(step_l))
+			if (x_to * FT_SIGN(step_r) >= c.x * FT_SIGN(step_r))
 			{
 				step_r = (b.x - c.x) / (b.y - c.y);
 //				printf("step_r = %f\n", step_r);
@@ -491,6 +489,9 @@ void	fill_img(t_params *prms, t_vector a, t_vector b, t_vector c)
 		++y;
 	}
 //	printf("end\n");
+//	mlx_string_put(prms->mlx, prms->win, (int)a.x + prms->n / 2, (int)a.y + prms->m / 2, 0x00ff0000, "a");
+//	mlx_string_put(prms->mlx, prms->win, (int)b.x + prms->n / 2, (int)b.y + prms->m / 2, 0x00ff0000, "b");
+//	mlx_string_put(prms->mlx, prms->win, (int)c.x + prms->n / 2, (int)c.y + prms->m / 2, 0x00ff0000, "c");
 }
 
 void	ft_draw_triangle(t_params *prms, t_vector a, t_vector b, t_vector c)
