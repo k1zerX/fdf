@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:06:59 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/28 15:31:29 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/02/28 17:09:42 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,8 @@ void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr)
 //			prms->img[((int)p.x * prms->n + (int)p.y) * 4 + A] = (int)round((1 - (1 - gr.opacity_y) * gr.opacity_x) * 255);
 			prms->deep_map[(int)p.x * prms->n + (int)p.y] = p.z;
 		}
-		else
-			((int *)prms->img)[(int)p.x * prms->n + (int)p.y] = 0x00ff0000;
+//		else
+//			((int *)prms->img)[(int)p.x * prms->n + (int)p.y] = 0x00ff0000;
 		color &= 0x00ffffff;
 		color |= (int)round((1 - gr.opacity_y * gr.opacity_x) * 255) << 24;
 		if (p.z > prms->deep_map[(int)p.x * prms->n + (int)p.y + 1])
@@ -53,8 +53,8 @@ void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr)
 //			prms->img[((int)p.x * prms->n + (int)p.y + 1) * 4 + A] = (int)round((1 - gr.opacity_y * gr.opacity_x) * 255);
 			prms->deep_map[(int)p.x * prms->n + (int)p.y + 1] = p.z;
 		}
-		else
-			((int *)prms->img)[(int)p.x * prms->n + (int)p.y + 1] = 0x00ff0000;
+//		else
+//			((int *)prms->img)[(int)p.x * prms->n + (int)p.y + 1] = 0x00ff0000;
 	}
 	else
 	{
@@ -67,8 +67,8 @@ void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr)
 //			prms->img[((int)p.y * prms->n + (int)p.x) * 4 + A] = (int)round((1 - (1 - gr.opacity_y) * gr.opacity_x) * 255);
 			prms->deep_map[(int)p.y * prms->n + (int)p.x] = p.z;
 		}
-		else
-			((int *)prms->img)[(int)p.y * prms->n + (int)p.x] = 0x00ff0000;
+//		else
+//			((int *)prms->img)[(int)p.y * prms->n + (int)p.x] = 0x00ff0000;
 		color &= 0x00ffffff;
 		color |= (int)round((1 - gr.opacity_y * gr.opacity_x) * 255) << 24;
 		if (p.z > prms->deep_map[(int)(p.y + 1) * prms->n + (int)p.x])
@@ -80,8 +80,8 @@ void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr)
 //			prms->img[((int)(p.y + 1) * prms->n + (int)p.x) * 4 + A] = (int)round((1 - gr.opacity_y * gr.opacity_x) * 255);
 			prms->deep_map[(int)(p.y + 1) * prms->n + (int)p.x] = p.z;
 		}
-		else
-			((int *)prms->img)[(int)(p.y + 1) * prms->n + (int)p.x] = 0x00ff0000;
+//		else
+//			((int *)prms->img)[(int)(p.y + 1) * prms->n + (int)p.x] = 0x00ff0000;
 	}
 //	return (0);
 }
@@ -141,6 +141,7 @@ void		ft_put_line(t_params *prms, t_vector from, t_vector to)
 	t_gradient	gr;
 
 	//printf("d = %f, sh.z = %f\n", prms->d, prms->shift.z);
+//	printf("%f, %f, %f vs %f, %f, %f\n", from.x, from.y, from.z, to.x, to.y, to.z);
 	gr.from = prms->map[(int)from.y][(int)from.x][1];
 	gr.to = prms->map[(int)to.y][(int)to.x][1];
 	from = turn_vector(add_vector(from, prms->start), prms->q, 1);
