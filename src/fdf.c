@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/28 17:50:32 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/11 19:32:22 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -374,11 +374,14 @@ void	ft_test(t_params *prms)
 
 	gr.from = 0x00ffffff;
 	gr.to = 0x00ff0000;
-	p0.x = -20;
-	p0.y = -20;
+	p0.x = -21;
+	p0.y = -21;
 	p1.x = 20;
 	p1.y = 20;
 	mlx_clear_window(prms->mlx, prms->win);
+//	((int *)prms->img)[99 * prms->n + 99] = 0x000000ff;
+//	((int *)prms->img)[100 * prms->n + 99] = 0x0000ff00;
+//	((int *)prms->img)[99 * prms->n + 100] = 0x00ff0000;
 	from = get_vector(0, 0, 0);
 	to = get_vector(p0.x, p0.y, 0);
 	while (++to.x < p1.x)
@@ -419,6 +422,7 @@ void	ft_draw(t_params *prms)
 //			printf("%f\n", prms->deep_map[j * prms->n + i]);
 		}
 	}
+//	ft_test(prms);
 	j = -1;
 	while (++j < prms->y -1)
 	{
@@ -466,7 +470,7 @@ void	ft_draw(t_params *prms)
 	}
 	printf("--------------------------------------\n");*/
 	/**/
-	//ft_test(prms);
+//	ft_test(prms);
 	/**/
 	mlx_put_image_to_window(prms->mlx, prms->win, prms->img_ptr, 0, 0);
 }
