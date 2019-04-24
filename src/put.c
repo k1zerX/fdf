@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:06:59 by kbatz             #+#    #+#             */
-/*   Updated: 2019/04/11 19:32:06 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 15:05:58 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ void		get_color(int *dst, int new, char bl)
 	double	a;
 	double	b;
 
-//	printf("color:\n");
 	if (bl)
 	{
 		prev = new;
@@ -29,28 +28,13 @@ void		get_color(int *dst, int new, char bl)
 		prev = *dst;
 	a = (double)((prev >> 24) & 0xff) / 255;
 	b = (double)((new >> 24) & 0xff) / 255;
-//	printf("\tprev = %f:\n", a);
-//	printf("\tnew = %f:\n", b);
 	*dst = (int)round((a * b) * 0xff) << 24;
-//	printf("\tA: %x\n", (*dst >> 24) & 0xff);
 	i = 0;
 	while (i <= 16)
 	{
-//		printf("\t");
-		//*dst |= (int)round(((double)((prev >> i) & 0xff) * a / 255 + (double)((new >> i) & 0xff)) * (1 - b) / (1 - a * b)) << i;
 		*dst |= (int)round((((prev >> i) & 255) * b * (1 - a) + ((new >> i) & 255) * (1 - b)) / (1 - a * b)) << i;
-//		if (i == 0)
-//			printf("B");
-//		else if (i == 8)
-//			printf("G");
-//		else if (i == 16)
-//			printf("R");
-//		printf(": %x\n", (*dst >> i) & 0xff);
 		i += 8;
 	}
-//	*dst &= 0xff000000;
-//	*dst |= (int)round((a * b) / 0xff) << 24;
-//	printf("res: 0x%08x\n\n", *dst);
 }
 
 void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr)
@@ -112,7 +96,6 @@ void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr)
 		else
 			get_color((int *)prms->img + (int)(p.y + 1) * prms->n + (int)p.x, color, 1);
 	}
-//	return (0);
 }
 
 void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr)
@@ -121,8 +104,10 @@ void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 	double	grk;
 	double	k;
 	double	kz;
+	char	i;
 
-	grk = 1 / (to.x - from.x);
+	i = FT_SIGN(to.x - from.x);
+	grk = 1 / (to.x - from.x) * i;
 	kz = (to.z - from.z) * grk;
 	gr.k = 1;
 	gr.opacity_x = modf(to.x, &p.x);
@@ -138,14 +123,15 @@ void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 	k = (to.y - from.y) * grk;
 	gr.opacity_x = 1;
 	//from.y = p.y;
-	from.y += gr.opacity_x * k - k;
+	from.y += (gr.opacity_x - 1) * k;
 //	printf("%f vs %f\n", p.y, from.y);
 //	printf("%f, %f, %f ---> %f, %f, %f\n", from.x, from.y, from.z, to.x, to.y, to.z);
-	while ((++p.x <= to.x && !gr.inf) || gr.inf)
+	while ((p.x * i <= to.x * i && !gr.inf) || gr.inf)
 	//while (++x <= to.x)
 	{
 		//if (gr.inf)
 		//	printf("%f\n", from.z + prms->d);
+		p.x += i;
 		p.z += kz;
 		from.y += k;
 		gr.opacity_y = modf(from.y, &p.y);
@@ -156,14 +142,6 @@ void		ft_put_line2(t_params *prms, t_vector from, t_vector to, t_gradient gr)
 		if (gr.inf)
 			if (p.x < 0 || p.y < 0 || p.x > prms->n || p.y > prms->m)
 				break ;
-		if (gr.inf)
-		{
-//			printf("ALERT\n");
-//			printf("%f to %f\n", x, to.x);
-			//if (from.z >= to.z)
-			//	printf("%f to %f\n", from.z, to.z);
-//			break ;
-		}
 	}
 }
 
@@ -189,6 +167,11 @@ void		ft_put_line(t_params *prms, t_vector from, t_vector to)
 //	if (from.z >= -prms->d && to.z >= -prms->d)
 	if (from.z >= -prms->d || to.z >= -prms->d)
 		return;
+	if (from.z >= -prms->d)
+	{
+		ft_swap(&from, &to, sizeof(from));
+		ft_swap(&gr.from, &gr.to, sizeof(gr.from));
+	}
 	if (from.z >= -prms->d)
 	{
 //		printf("%f ||| %f, %f, %f\n", -prms->d, from.x, from.y, from.z);
@@ -227,11 +210,11 @@ void		ft_put_line(t_params *prms, t_vector from, t_vector to)
 		ft_swap(&from.x, &from.y, sizeof(from.x));
 		ft_swap(&to.x, &to.y, sizeof(to.x));
 	}
-	if (from.x > to.x)
-	{
-		ft_swap(&from, &to, sizeof(from));
-		ft_swap(&gr.from, &gr.to, sizeof(gr.from));
-	}
+/**///	if (from.x > to.x)
+/**///	{
+/**///		ft_swap(&from, &to, sizeof(from));
+/**///		ft_swap(&gr.from, &gr.to, sizeof(gr.from));
+/**///	}
 	k_vector(&from, K);
 	k_vector(&to, K);
 	from.x += prms->n / 2;

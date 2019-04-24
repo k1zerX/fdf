@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:09 by kbatz             #+#    #+#             */
-/*   Updated: 2019/04/11 19:32:22 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 17:12:03 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,65 +55,12 @@ int		ft_close(t_params *prms)
 	return (0);
 }
 
-int		ft_alt_key_press(int keycode, t_params *prms)
-{
-	if (keycode == 123)
-		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qx));
-	else if (keycode == 124)
-		prms->q = mul_qtrn(prms->q, *g_qx);
-	else if (keycode == 125)
-		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qy));
-	else if (keycode == 126)
-		prms->q = mul_qtrn(prms->q, *g_qy);
-	return (0);
-}
-
-int		ft_x_press(int keycode, t_params *prms)
-{
-	if (keycode == 69)
-		prms->q = mul_qtrn(prms->q, *g_qx);
-	else if (keycode == 78)
-		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qx));
-//	ft_draw(prms);
-	return (0);
-}
-
-int		ft_y_press(int keycode, t_params *prms)
-{
-	if (keycode == 69)
-		prms->q = mul_qtrn(prms->q, *g_qy);
-	else if (keycode == 78)
-		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qy));
-//	ft_draw(prms);
-	return (0);
-}
-
-int		ft_z_press(int keycode, t_params *prms)
-{
-	if (keycode == 69)
-		prms->q = mul_qtrn(prms->q, *g_qz);
-	else if (keycode == 78)
-		prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qz));
-//	ft_draw(prms);
-	return (0);
-}
-
 int		ft_key_press(int keycode, t_params *prms)
 {
-	if (prms->alt)
-		ft_alt_key_press(keycode, prms);
-	else if (prms->xturn)
-		ft_x_press(keycode, prms);
-	else if (prms->yturn)
-		ft_y_press(keycode, prms);
-	else if (prms->zturn)
-		ft_z_press(keycode, prms);
-	else if (keycode == 53)
+	if (keycode == 53)
 		ft_close(prms);
 	else if (keycode == 15)
 		ft_initialize(prms);
-	else if (keycode == 259)
-		prms->alt = 1;
 	else if (keycode == 69)
 	{
 		prms->d *= 0.8;
@@ -126,81 +73,30 @@ int		ft_key_press(int keycode, t_params *prms)
 		prms->shift.z *= 1.25;
 		g_delta *= 1.25;
 	}
-	else if (keycode == 7)
-		prms->xturn = 1;
-	else if (keycode == 16)
-		prms->yturn = 1;
-	else if (keycode == 6)
-		prms->zturn = 1;
-	//printf("d = %f\n", prms->d);
-	ft_draw(prms);
-	return (0);
-}
-
-int		ft_key_release(int keycode, t_params *prms)
-{
-	if (keycode == 7)
-		prms->xturn = 0;
-	else if (keycode == 16)
-		prms->yturn = 0;
-	else if (keycode == 6)
-		prms->zturn = 0;
-//	else if (prms->xturn || prms->yturn || prms->zturn)
-//		return (0);
-	else if (keycode == 259)
-		prms->alt = 0;
 	ft_draw(prms);
 	return (0);
 }
 
 int		ft_mouse_press(int button, int x, int y, t_params *prms)
 {
-	/*if (prms->xturn)
-	{
-		if (button == 5)
-			prms->q = mul_qtrn(prms->q, *g_qx);
-		else if (button == 4)
-			prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qx));
-	}
-	else if (prms->yturn)
-	{
-		if (button == 5)
-			prms->q = mul_qtrn(prms->q, *g_qy);
-		else if (button == 4)
-			prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qy));
-	}
-	else if (prms->zturn)
-	{
-		if (button == 5)
-			prms->q = mul_qtrn(prms->q, *g_qz);
-		else if (button == 4)
-			prms->q = mul_qtrn(prms->q, rev_qtrn(*g_qz));
-	}
-	else */
 	if (button == 1)
 	{
 		if (x >= 0 && y >= 0 && x < prms->n && y < prms->m)
-			prms->click = 1;
-		prms->click_p.x = x;
-		prms->click_p.y = y;
+			prms->lmb = 1;
+		prms->lmb_p.x = x;
+		prms->lmb_p.y = y;
+	}
+	else if (button == 2)
+	{
+		if (x >= 0 && y >= 0 && x < prms->n && y < prms->m)
+			prms->rmb = 1;
+		prms->rmb_p.x = x;
+		prms->rmb_p.y = y;
 	}
 	else if (button == 4)
-	{
-		prms->shift.x += (double)(prms->n / 2 - x) / prms->d * (prms->shift.z + prms->d) / K;
-		prms->shift.y += (double)(prms->m / 2 - y) / prms->d * (prms->shift.z + prms->d) / K;
 		prms->shift.z += g_delta;
-		prms->shift.x += (double)(x - prms->n / 2) / prms->d * (prms->shift.z + prms->d) / K;
-		prms->shift.y += (double)(y - prms->m / 2) / prms->d * (prms->shift.z + prms->d) / K;
-	}
 	else if (button == 5)
-	{
-		prms->shift.x += (double)(prms->n / 2 - x) / prms->d * (prms->shift.z + prms->d) / K;
-		prms->shift.y += (double)(prms->m / 2 - y) / prms->d * (prms->shift.z + prms->d) / K;
 		prms->shift.z -= g_delta;
-		prms->shift.x += (double)(x - prms->n / 2) / prms->d * (prms->shift.z + prms->d) / K;
-		prms->shift.y += (double)(y - prms->m / 2) / prms->d * (prms->shift.z + prms->d) / K;
-	}
-	//printf("z = %f\n", prms->shift.z);
 	ft_draw(prms);
 	return (0);
 }
@@ -208,209 +104,63 @@ int		ft_mouse_press(int button, int x, int y, t_params *prms)
 int		ft_mouse_release(int button, int x, int y, t_params *prms)
 {
 	if (button == 1)
-		prms->click = 0;
-	return (0);
-}
-
-int		ft_alt_mouse_move(int x, int y, t_params *prms)
-{
-	t_vector	axis;
-	t_qtrn		q;
-
-	if (prms->click)
-	{
-		axis = turn_vector(get_vector(0, 1, 0), prms->q, 0);
-		q = get_qtrn(axis, (double)(x - prms->click_p.x) / 100);
-		prms->q = mul_qtrn(prms->q, q);
-		axis = turn_vector(get_vector(-1, 0, 0), prms->q, 0);
-		q = get_qtrn(axis, (double)(y - prms->click_p.y) / 100);
-		prms->q = mul_qtrn(prms->q, q);
-		prms->click_p.x = x;
-		prms->click_p.y = y;
-	}
-	return (0);
-}
-
-int		ft_x_mouse_move(int x, int y, t_params *prms)
-{
-	t_vector	v0;
-	t_vector	v1;
-	t_qtrn		q;
-	double		angle;
-
-	if (prms->click)
-	{
-		v0 = get_vector(prms->click_p.x, prms->click_p.y, 0);
-		v0 = turn_vector(v0, prms->q, 0);
-		v1 = turn_vector(get_vector(x, y, 0), prms->q, 0);
-		v0.x = 0;
-		v1.x = 0;
-		angle = get_angle(v0, v1);
-		printf("%f\n", angle);
-		if ((*(unsigned long long int *)&angle & 0x7ff0000000000000) == 0x7ff0000000000000)
-			angle = 0;
-//		printf("before:\tv0(%f, %f, %f) & v1(%f, %f, %f)\n", v0.x, v0.y, v0.z, v1.x, v1.y, v1.z);
-//		v0 = turn_vector(v0, prms->q, 1);
-//		v1 = turn_vector(v1, prms->q, 1);
-//		printf("after:\tv0(%f, %f, %f) & v1(%f, %f, %f)\n\n", v0.x, v0.y, v0.z, v1.x, v1.y, v1.z);
-		q = get_qtrn(get_vector(1, 0, 0), 5 * angle);
-		prms->q = mul_qtrn(prms->q, q);
-		prms->click_p.x = x;
-		prms->click_p.y = y;
-	}
-	return (0);
-}
-
-int		ft_y_mouse_move(int x, int y, t_params *prms)
-{
-	t_vector	v0;
-	t_vector	v1;
-	t_qtrn		q;
-	double		angle;
-
-	if (prms->click)
-	{
-		v0 = get_vector(prms->click_p.x, prms->click_p.y, 0);
-		v0 = turn_vector(v0, prms->q, 1);
-		v1 = turn_vector(get_vector(x, y, 0), prms->q, 1);
-		angle = get_angle(v0, v1);
-		if ((*(unsigned long long int *)&angle & 0x7ff0000000000000) == 0x7ff0000000000000)
-			angle = 0;
-		q = get_qtrn(get_vector(0, 1, 0), 5 * angle);
-		prms->q = mul_qtrn(prms->q, q);
-		prms->click_p.x = x;
-		prms->click_p.y = y;
-	}
-	return (0);
-}
-
-int		ft_z_mouse_move(int x, int y, t_params *prms)
-{
-	t_vector	v0;
-	t_vector	v1;
-	t_qtrn		q;
-	double		angle;
-
-	if (prms->click)
-	{
-		v0 = get_vector(prms->click_p.x, prms->click_p.y, 0);
-		v0 = turn_vector(v0, prms->q, 1);
-		v1 = turn_vector(get_vector(x, y, 0), prms->q, 1);
-		angle = get_angle(v0, v1);
-		if ((*(unsigned long long int *)&angle & 0x7ff0000000000000) == 0x7ff0000000000000)
-			angle = 0;
-		q = get_qtrn(get_vector(0, 0, 1), 5 * angle);
-		prms->q = mul_qtrn(prms->q, q);
-		prms->click_p.x = x;
-		prms->click_p.y = y;
-	}
+		prms->lmb = 0;
+	else if (button == 2)
+		prms->rmb = 0;
 	return (0);
 }
 
 int		ft_mouse_move(int x, int y, t_params *prms)
 {
-	if (prms->alt)
-		ft_alt_mouse_move(x, y, prms);
-	else if (prms->xturn)
-		ft_x_mouse_move(x, y, prms);
-	else if (prms->yturn)
-		ft_y_mouse_move(x, y, prms);
-	else if (prms->zturn)
-		ft_z_mouse_move(x, y, prms);
-	else if (prms->click)
+	t_qtrn		q;
+	t_vector	axis;
+
+	if (prms->rmb)
 	{
-		prms->shift.x += (double)(x - prms->click_p.x) / prms->d * (prms->shift.z + prms->d) / K;
-		prms->shift.y += (double)(y - prms->click_p.y) / prms->d * (prms->shift.z + prms->d) / K;
-		prms->click_p.x = x;
-		prms->click_p.y = y;
+		prms->shift.x += (double)(x - prms->rmb_p.x) / prms->d * (prms->shift.z + prms->d) / K;
+		prms->shift.y += (double)(y - prms->rmb_p.y) / prms->d * (prms->shift.z + prms->d) / K;
+		prms->rmb_p.x = x;
+		prms->rmb_p.y = y;
+	}
+	else if (prms->lmb)
+	{
+		axis = turn_vector(get_vector(0, 1, 0), prms->q, 0);
+		q = get_qtrn(axis, (double)(x - prms->lmb_p.x) / 100);
+		prms->q = mul_qtrn(prms->q, q);
+		axis = turn_vector(get_vector(-1, 0, 0), prms->q, 0);
+		q = get_qtrn(axis, (double)(y - prms->lmb_p.y) / 100);
+		prms->q = mul_qtrn(prms->q, q);
+		prms->lmb_p.x = x;
+		prms->lmb_p.y = y;
 	}
 	ft_draw(prms);
 	return (0);
 }
 
-void	ft_put_axis(t_params *prms, t_vector axis, int color)
+void	put_sector(t_params *prms, int i, int j)
 {
-	t_vector	from;
-	t_vector	buf;
-	t_gradient	gr;
-	double		alpha;
+	t_vector from;
+	t_vector to;
 
-	buf = axis;
-	k_vector(&axis, 10);
-	from = add_vector(rev_vector(axis), rev_vector(prms->start));
-	axis = add_vector(axis, rev_vector(prms->start));
-	gr.from = (int)round((double)(((color >> 16) & 0xff) * 0.25)) << 16;
-	gr.from |= (int)round((double)(((color >> 8) & 0xff) * 0.25)) << 8;
-	gr.from |= (int)round((double)((color) & 0xff) * 0.25);
-	gr.to = color;
-	ft_put_line(prms, from, axis);
-	from = axis;
-	alpha = 0;
-	while (alpha < M_PI * 16)
+	from = get_vector(i, j, prms->map[j][i][0]);
+	if (i + 1 < prms->x)
 	{
-		gr.from = color;
-		gr.to = (int)round((double)(((color >> 16) & 0xff) * 0.925)) << 16;
-		gr.to |= (int)round((double)(((color >> 8) & 0xff) * 0.925)) << 8;
-		gr.to |= (int)round((double)((color) & 0xff) * 0.925);
-		axis = from;
-		axis.x -= !!buf.x * 2;
-		axis.y -= !!buf.y * 2;
-		axis.z -= !!buf.z * 2;
-		axis.x += !buf.x * (!buf.y * sin(alpha) + !buf.z * cos(alpha));
-		axis.y += !buf.y * (!buf.z * sin(alpha) + !buf.x * cos(alpha));
-		axis.z += !buf.z * (!buf.x * sin(alpha) + !buf.y * cos(alpha));
-		ft_put_line(prms, from, axis);
-		alpha += 0.1;
+		to = get_vector(i + 1, j, prms->map[j][i + 1][0]);
+		ft_put_line(prms, from, to);
 	}
-}
-
-void	ft_test(t_params *prms)
-{
-	t_vector	from;
-	t_vector	to;
-	t_point		p0;
-	t_point		p1;
-	t_gradient	gr;
-
-	gr.from = 0x00ffffff;
-	gr.to = 0x00ff0000;
-	p0.x = -21;
-	p0.y = -21;
-	p1.x = 20;
-	p1.y = 20;
-	mlx_clear_window(prms->mlx, prms->win);
-//	((int *)prms->img)[99 * prms->n + 99] = 0x000000ff;
-//	((int *)prms->img)[100 * prms->n + 99] = 0x0000ff00;
-//	((int *)prms->img)[99 * prms->n + 100] = 0x00ff0000;
-	from = get_vector(0, 0, 0);
-	to = get_vector(p0.x, p0.y, 0);
-	while (++to.x < p1.x)
+	if (j + 1 < prms->y)
+	{
+		to = get_vector(i, j + 1, prms->map[j + 1][i][0]);
 		ft_put_line(prms, from, to);
-	ft_put_line(prms, from, to);
-	while (++to.y < p1.y)
-		ft_put_line(prms, from, to);
-	ft_put_line(prms, from, to);
-	while (--to.x > p0.x)
-		ft_put_line(prms, from, to);
-	ft_put_line(prms, from, to);
-	while (--to.y > p0.y)
-		ft_put_line(prms, from, to);
-	ft_put_line(prms, from, to);
+	}
 }
 
 void	ft_draw(t_params *prms)
 {
-	int			bits_per_pixel;
-	int			size_line;
-	int			endian;
 	int			i;
 	int			j;
-	t_vector	from;
-	t_vector	to;
 
 	mlx_clear_window(prms->mlx, prms->win);
-	prms->img_ptr = mlx_new_image(prms->mlx, prms->n, prms->m);
-	prms->img = mlx_get_data_addr(prms->img_ptr, &bits_per_pixel, &size_line, &endian);
 	j = -1;
 	while (++j < prms->m)
 	{
@@ -419,59 +169,15 @@ void	ft_draw(t_params *prms)
 		{
 			prms->img[(j * prms->n + i) * 4 + A] = 0xff;
 			prms->deep_map[j * prms->n + i] = -1.0 / 0.0;
-//			printf("%f\n", prms->deep_map[j * prms->n + i]);
 		}
 	}
-//	ft_test(prms);
 	j = -1;
-	while (++j < prms->y -1)
+	while (++j < prms->y)
 	{
 		i = -1;
-		while (++i < prms->x - 1)
-		{
-//			printf("%d, %d\n", i, j);
-			from = get_vector(i, j, prms->map[j][i][0]);
-			to = get_vector(i + 1, j, prms->map[j][i + 1][0]);
-			ft_put_line(prms, from, to);
-			to = get_vector(i, j + 1, prms->map[j + 1][i][0]);
-			ft_put_line(prms, from, to);
-		}
+		while (++i < prms->x)
+			put_sector(prms, i, j);
 	}
-	j = prms->y - 1;
-	i = prms->x;
-	while (--i > 0)
-	{
-			from = get_vector(i, j, prms->map[j][i][0]);
-			to = get_vector(i - 1, j, prms->map[j][i - 1][0]);
-			ft_put_line(prms, from, to);
-	}
-	i = prms->x - 1;
-	j = prms->y;
-	while (--j > 0)
-	{
-			from = get_vector(i, j, prms->map[j][i][0]);
-			to = get_vector(i, j - 1, prms->map[j - 1][i][0]);
-			ft_put_line(prms, from, to);
-	}
-	if (prms->xturn)
-		ft_put_axis(prms, get_vector(1, 0, 0), RED);
-	if (prms->yturn)
-		ft_put_axis(prms, get_vector(0, 1, 0), GREEN);
-	if (prms->zturn)
-		ft_put_axis(prms, get_vector(0, 0, 1), BLUE);
-/*	printf("--------------------------------------\n");
-	j = -1;
-	while (++j < prms->m)
-	{
-		i = -1;
-		while (++i < prms->n)
-			if (prms->deep_map[j * prms->n + i] > 0)
-				printf("%f\m", prms->deep_map[j * prms->n + i]);
-	}
-	printf("--------------------------------------\n");*/
-	/**/
-//	ft_test(prms);
-	/**/
 	mlx_put_image_to_window(prms->mlx, prms->win, prms->img_ptr, 0, 0);
 }
 
@@ -524,7 +230,6 @@ void	ft_read(int fd, t_params *prms)
 	while ((b = get_next_line(fd, &buf)) > 0)
 	{
 		str = buf;
-		//printf("%s\n", str);
 		map = ft_realloc(map, sizeof(*map) * len, 1);
 		k = 0;
 		while (*str)
@@ -580,7 +285,6 @@ void	ft_read(int fd, t_params *prms)
 				else if (map[j][i][0] > 0)
 				{
 					bk = (double)map[j][i][0] / (double)max;
-					//printf("%f / %f = %f\n", (double)map[j][i][0], (double)max, (double)map[j][i][0] / (double)max);
 					map[j][i][1] = (int)round(((TOP >> 16) & 0xff) * bk + ((ZERO >> 16) & 0xff) * (1 - bk)) << 16;
 					map[j][i][1] |= (int)round(((TOP >> 8) & 0xff) * bk + ((ZERO >> 8) & 0xff) * (1 - bk)) << 8;
 					map[j][i][1] |= (int)round((TOP & 0xff) * bk + (ZERO & 0xff) * (1 - bk));
@@ -588,7 +292,6 @@ void	ft_read(int fd, t_params *prms)
 				else if (map[j][i][0] < 0)
 				{
 					bk = (double)map[j][i][0] / (double)min;
-					//printf("%f / %f = %f\n", (double)map[j][i][0], (double)min, (double)map[j][i][0] / (double)min);
 					map[j][i][1] = (int)round(((BOT >> 16) & 0xff) * bk + ((ZERO >> 16) & 0xff) * (1 - bk)) << 16;
 					map[j][i][1] |= (int)round(((BOT >> 8) & 0xff) * bk + ((ZERO >> 8) & 0xff) * (1 - bk)) << 8;
 					map[j][i][1] |= (int)round((BOT & 0xff) * bk + (ZERO & 0xff) * (1 - bk));
@@ -596,7 +299,6 @@ void	ft_read(int fd, t_params *prms)
 			}
 			else
 				map[j][i][1] &= 0x00ffffff;
-			//printf("%#010x\n", map[j][i][1]);
 			map[j][i][0] -= min;
 		}
 	}
@@ -629,14 +331,21 @@ void	ft_initialize(t_params *prms)
 	prms->start.x = -(double)(prms->x - 1) / 2;
 	prms->start.y = -(double)(prms->y - 1) / 2;
 	prms->start.z = -(double)prms->z / 2;
-//	prms->start.z = 0;
 	g_delta = prms->z + 1;
 	prms->d = -g_delta * K;
 }
-/*
-нужно учитывать перспективу при расчете точки с которой нужно начинать отрисовывать
-ищем самую отдаленную из четырех крайних точек от камеры
-*/
+
+void	get_img(t_params *prms)
+{
+	int			bits_per_pixel;
+	int			size_line;
+	int			endian;
+
+	prms->mlx = mlx_init();
+	prms->win = mlx_new_window(prms->mlx, prms->n, prms->m, "mlx 42");
+	prms->img_ptr = mlx_new_image(prms->mlx, prms->n, prms->m);
+	prms->img = mlx_get_data_addr(prms->img_ptr, &bits_per_pixel, &size_line, &endian);
+}
 int		main(int ac, char **av)
 {
 	t_params	prms;
@@ -653,21 +362,10 @@ int		main(int ac, char **av)
 			ft_exit(1, NULL);
 	}
 	ft_read(open(av[1], O_RDONLY), &prms);
-//	int j = -1;
-//	if (prms.map)
-//		while (++j < prms.m)
-//		{
-//			int i = -1;
-//			while (++i < prms.n)
-//				printf("%d ", prms.map[j][i][0]);
-//			printf("\n");
-//		}
 	ft_initialize(&prms);
-	prms.mlx = mlx_init();
-	prms.win = mlx_new_window(prms.mlx, prms.n, prms.m, "mlx 42");
+	get_img(&prms);
 	ft_draw(&prms);
 	mlx_hook(prms.win, 2, 0, &ft_key_press, &prms);
-	mlx_hook(prms.win, 3, 0, &ft_key_release, &prms);
 	mlx_hook(prms.win, 4, 0, &ft_mouse_press, &prms);
 	mlx_hook(prms.win, 5, 0, &ft_mouse_release, &prms);
 	mlx_hook(prms.win, 6, 0, &ft_mouse_move, &prms);

@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:20:04 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/23 08:55:39 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 17:00:54 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,10 @@ typedef struct		s_params
 	t_vector		shift;
 	t_qtrn			q;
 	char			alt;
-	char			click;
-	t_point			click_p;
+	char			lmb;
+	t_point			lmb_p;
+	char			rmb;
+	t_point			rmb_p;
 	char			xturn;
 	char			yturn;
 	char			zturn;
