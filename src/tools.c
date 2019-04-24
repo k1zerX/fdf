@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/24 17:34:30 by kbatz             #+#    #+#             */
-/*   Updated: 2019/04/24 17:57:56 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 20:12:44 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,4 +70,32 @@ void	ft_initialize(t_params *prms)
 	prms->start.z = -(double)prms->z / 2;
 	prms->delta = prms->z + 1;
 	prms->d = -prms->delta * K;
+}
+
+void	ft_fill_one(int *color, int min, int max)
+{
+	double	bk;
+
+	if (!*(color - 1))
+		*color = ZERO;
+	else if (*(color - 1) > 0)
+	{
+		bk = (double)*(color - 1) / (double)max;
+		*color = (int)round(((TOP >> 16) & 0xff) * bk + \
+				((ZERO >> 16) & 0xff) * (1 - bk)) << 16;
+		*color |= (int)round(((TOP >> 8) & 0xff) * bk + \
+				((ZERO >> 8) & 0xff) * (1 - bk)) << 8;
+		*color |= (int)round((TOP & 0xff) * bk + \
+				(ZERO & 0xff) * (1 - bk));
+	}
+	else if (*(color - 1) < 0)
+	{
+		bk = (double)*(color - 1) / (double)min;
+		*color = (int)round(((BOT >> 16) & 0xff) * bk + \
+				((ZERO >> 16) & 0xff) * (1 - bk)) << 16;
+		*color |= (int)round(((BOT >> 8) & 0xff) * bk + \
+				((ZERO >> 8) & 0xff) * (1 - bk)) << 8;
+		*color |= (int)round((BOT & 0xff) * bk + \
+				(ZERO & 0xff) * (1 - bk));
+	}
 }

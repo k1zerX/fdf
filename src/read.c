@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/24 17:21:08 by kbatz             #+#    #+#             */
-/*   Updated: 2019/04/24 19:54:15 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 20:13:15 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ int		ft_fill(t_params *prms, char *str, int *min, int *max)
 {
 	int		k;
 
-	prms->map = ft_realloc(prms->map, sizeof(*(prms->map)) * prms->y, 1);
 	k = 0;
 	while (*str)
 	{
@@ -68,36 +67,7 @@ int		ft_fill(t_params *prms, char *str, int *min, int *max)
 				*max = prms->map[prms->y][k - 1][0];
 		}
 	}
-	prms->y++;
 	return (k);
-}
-
-void	ft_fill_one(int *color, int min, int max)
-{
-	double	bk;
-
-	if (!*(color - 1))
-		*color = ZERO;
-	else if (*(color - 1) > 0)
-	{
-		bk = (double)*(color - 1) / (double)max;
-		*color = (int)round(((TOP >> 16) & 0xff) * bk + \
-				((ZERO >> 16) & 0xff) * (1 - bk)) << 16;
-		*color |= (int)round(((TOP >> 8) & 0xff) * bk + \
-				((ZERO >> 8) & 0xff) * (1 - bk)) << 8;
-		*color |= (int)round((TOP & 0xff) * bk + \
-				(ZERO & 0xff) * (1 - bk));
-	}
-	else if (*(color - 1) < 0)
-	{
-		bk = (double)*(color - 1) / (double)min;
-		*color = (int)round(((BOT >> 16) & 0xff) * bk + \
-				((ZERO >> 16) & 0xff) * (1 - bk)) << 16;
-		*color |= (int)round(((BOT >> 8) & 0xff) * bk + \
-				((ZERO >> 8) & 0xff) * (1 - bk)) << 8;
-		*color |= (int)round((BOT & 0xff) * bk + \
-				(ZERO & 0xff) * (1 - bk));
-	}
 }
 
 void	ft_fill_color(t_params *prms, int min, int max)
@@ -121,6 +91,17 @@ void	ft_fill_color(t_params *prms, int min, int max)
 	prms->z = max - min;
 }
 
+int		read_help_me_pls_tool(t_params *prms, char *str, int *min, int *max)
+{
+	int		k;
+
+	prms->map = ft_realloc(prms->map, sizeof(*(prms->map)) * prms->y, 1);
+	k = ft_fill(prms, str, min, max);
+	prms->y++;
+	free(str);
+	return (k);
+}
+
 void	ft_read(int fd, t_params *prms)
 {
 	char	*str;
@@ -131,8 +112,7 @@ void	ft_read(int fd, t_params *prms)
 
 	while ((b = get_next_line(fd, &str)) > 0)
 	{
-		k = ft_fill(prms, str, &min, &max);
-		free(str);
+		k = read_help_me_pls_tool(prms, str, &min, &max);
 		if (!prms->x)
 			prms->x = k;
 		else if (prms->x != k)
