@@ -6,14 +6,14 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 18:58:04 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/21 02:02:15 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 17:46:09 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef VECTOR_H
 # define VECTOR_H
 
-#include "fdf.h"
+# include "fdf.h"
 
 void		k_vector(t_vector *v, double k);
 t_vector	add_vector(t_vector a, t_vector b);

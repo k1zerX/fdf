@@ -1,23 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   put.h                                              :+:      :+:    :+:   */
+/*   tools.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/02/15 19:17:19 by kbatz             #+#    #+#             */
-/*   Updated: 2019/04/24 17:45:49 by kbatz            ###   ########.fr       */
+/*   Created: 2019/04/24 17:34:11 by kbatz             #+#    #+#             */
+/*   Updated: 2019/04/24 17:57:55 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PUT_H
-# define PUT_H
+#ifndef TOOLS_H
+# define TOOLS_H
 
-# include "fdf.h"
-
-void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr);
-void		ft_put_line2(t_params *prms, t_vector from, t_vector to, \
-		t_gradient gr);
-void		ft_put_line(t_params *prms, t_vector from, t_vector to);
+void	ft_exit(int status, t_params *prms);
+int		ft_close(t_params *prms);
+void	ft_initialize(t_params *prms);
 
 #endif

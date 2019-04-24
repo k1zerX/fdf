@@ -6,14 +6,14 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 19:20:04 by kbatz             #+#    #+#             */
-/*   Updated: 2019/04/24 17:12:46 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 18:02:21 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef STRUCTS_H
 # define STRUCTS_H
 
-#include "fdf.h"
+# include "fdf.h"
 
 typedef struct		s_point
 {
@@ -29,7 +29,6 @@ typedef struct		s_gradient
 	double			opacity_y;
 	double			k;
 	char			inv;
-	char			inf;
 }					t_gradient;
 
 typedef struct		s_vector
@@ -70,6 +69,7 @@ typedef struct		s_params
 	int				m;
 	t_vector		start;
 	double			d;
+	double			delta;
 }					t_params;
 
 typedef struct		s_draw

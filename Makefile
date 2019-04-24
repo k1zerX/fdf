@@ -6,7 +6,7 @@
 #    By: kbatz <marvin@42.fr>                       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/12/02 04:16:06 by kbatz             #+#    #+#              #
-#    Updated: 2019/04/24 13:08:33 by kbatz            ###   ########.fr        #
+#    Updated: 2019/04/24 17:24:47 by kbatz            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,7 +28,7 @@ HDR		= $(wildcard $(HDRDIR)*.h)
 TEST	= $(patsubst $(TESTDIR)%,%,$(wildcard $(TESTDIR)*))
 LFLAG   = $(addprefix -L,$(LIBDIR)) $(addprefix -,$(patsubst lib%,l%,$(LIB))) -lmlx -framework OpenGL -framework AppKit
 IFLAG   = $(addprefix -I,$(HDRDIR)) $(addprefix -I,$(LHD))
-CFLAG	= #-Wall -Wextra -Werror
+CFLAG	= -Wall -Wextra -Werror
 
 vpath %.c $(SRCDIR)
 vpath %.o $(OBJDIR)

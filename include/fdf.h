@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/06 08:41:58 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/24 20:40:04 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 17:56:57 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,12 @@
 # include "structs.h"
 # include "vector.h"
 # include "qtrn.h"
+# include "tools.h"
+# include "read.h"
+# include "hook.h"
 # include "put.h"
+
+void	ft_draw(t_params *prms);
 
 # define CLOSE 0
 # define USAGE 1

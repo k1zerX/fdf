@@ -1,23 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   put.h                                              :+:      :+:    :+:   */
+/*   hook.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/02/15 19:17:19 by kbatz             #+#    #+#             */
-/*   Updated: 2019/04/24 17:45:49 by kbatz            ###   ########.fr       */
+/*   Created: 2019/04/24 17:49:22 by kbatz             #+#    #+#             */
+/*   Updated: 2019/04/24 17:57:57 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PUT_H
-# define PUT_H
+#ifndef HOOK_H
+# define HOOK_H
 
-# include "fdf.h"
-
-void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr);
-void		ft_put_line2(t_params *prms, t_vector from, t_vector to, \
-		t_gradient gr);
-void		ft_put_line(t_params *prms, t_vector from, t_vector to);
+int		ft_key_press(int keycode, t_params *prms);
+int		ft_mouse_press(int button, int x, int y, t_params *prms);
+int		ft_mouse_release(int button, int x, int y, t_params *prms);
+int		ft_mouse_move(int x, int y, t_params *prms);
 
 #endif

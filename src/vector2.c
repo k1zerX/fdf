@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/16 19:39:35 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/21 05:45:57 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 17:47:54 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,4 +38,17 @@ void		project_vector(t_vector *a, t_vector b)
 
 	q = get_qtrn(vector_mul(*a, b), acos(scalar_mul(*a, b)));
 	*a = turn_vector(*a, q, 1);
+}
+
+t_vector	turn_vector(t_vector v, t_qtrn q, char clockwise)
+{
+	t_qtrn	tmp;
+
+	tmp.w = 0;
+	tmp.v = v;
+	if (clockwise)
+		tmp = mul_qtrn(mul_qtrn(q, tmp), rev_qtrn(q));
+	else
+		tmp = mul_qtrn(mul_qtrn(rev_qtrn(q), tmp), q);
+	return (tmp.v);
 }

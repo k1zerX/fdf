@@ -1,23 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   put.h                                              :+:      :+:    :+:   */
+/*   read.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/02/15 19:17:19 by kbatz             #+#    #+#             */
-/*   Updated: 2019/04/24 17:45:49 by kbatz            ###   ########.fr       */
+/*   Created: 2019/04/24 17:22:30 by kbatz             #+#    #+#             */
+/*   Updated: 2019/04/24 17:24:06 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PUT_H
-# define PUT_H
+#ifndef READ_H
+# define READ_H
 
-# include "fdf.h"
-
-void		ft_put_2pixel(t_params *prms, t_vector p, t_gradient gr);
-void		ft_put_line2(t_params *prms, t_vector from, t_vector to, \
-		t_gradient gr);
-void		ft_put_line(t_params *prms, t_vector from, t_vector to);
+void	ft_read(int fd, t_params *prms);
+void	fill_map_elem(int *elem, char **str);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: kbatz <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/15 18:45:51 by kbatz             #+#    #+#             */
-/*   Updated: 2019/02/21 02:00:39 by kbatz            ###   ########.fr       */
+/*   Updated: 2019/04/24 17:46:48 by kbatz            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,5 +50,5 @@ t_qtrn		mul_qtrn(t_qtrn a, t_qtrn b)
 	res.v.x = a.w * b.v.x + a.v.x * b.w + a.v.y * b.v.z - a.v.z * b.v.y;
 	res.v.y = a.w * b.v.y + a.v.y * b.w + a.v.z * b.v.x - a.v.x * b.v.z;
 	res.v.z = a.w * b.v.z + a.v.z * b.w + a.v.x * b.v.y - a.v.y * b.v.x;
-	return (res); 
+	return (res);
 }
